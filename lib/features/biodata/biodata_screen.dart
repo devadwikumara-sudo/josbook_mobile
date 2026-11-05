@@ -1,83 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/api_client.dart';
 import '../../core/theme.dart';
 import '../../shared/widgets/navbar.dart';
 
-class BiodataScreen extends StatefulWidget {
+class BiodataScreen extends StatelessWidget {
   const BiodataScreen({super.key});
 
-  @override
-  State<BiodataScreen> createState() => _BiodataScreenState();
-}
-
-class _BiodataScreenState extends State<BiodataScreen> {
-  late Future<Map<String, dynamic>> _data;
-
-  @override
-  void initState() {
-    super.initState();
-    _data = _muat();
-  }
-
-  Future<Map<String, dynamic>> _muat() async {
-    final res = await ApiClient.instance.get('/home');
-    final data = res['data'];
-    if (data is! Map) {
-      throw const FormatException(
-        'Format data biodata dari server tidak valid.',
-      );
-    }
-    return Map<String, dynamic>.from(data);
-  }
-
-  String _teks(Map<String, dynamic> data, List<String> keys) {
-    for (final key in keys) {
-      final value = data[key];
-      if (value != null && value.toString().trim().isNotEmpty) {
-        return value.toString();
-      }
-    }
-    return '-';
-  }
-
-  List<MapEntry<String, String>> _baris(Map<String, dynamic> data) {
-    final tempatLahir = _teks(data, ['tempat_lahir']);
-    final tanggalLahir = _teks(data, ['tanggal_lahir', 'tgl_lahir']);
-    final ttl = [
-      if (tempatLahir != '-') tempatLahir,
-      if (tanggalLahir != '-') tanggalLahir,
-    ].join(', ');
-
-    final tinggi = _teks(data, ['tinggi', 'tinggi_badan']);
-    final berat = _teks(data, ['berat', 'berat_badan']);
-    final tinggiBerat = [
-      if (tinggi != '-') '$tinggi cm',
-      if (berat != '-') '$berat kg',
-    ].join(' / ');
-
-    return [
-      MapEntry('Nama', _teks(data, ['nama'])),
-      MapEntry('NISN', _teks(data, ['nisn'])),
-      MapEntry('NIS', _teks(data, ['nis'])),
-      MapEntry('TTL', ttl.isEmpty ? _teks(data, ['ttl']) : ttl),
-      MapEntry('Agama', _teks(data, ['agama'])),
-      MapEntry('Alamat', _teks(data, ['alamat'])),
-      MapEntry('Ayah', _teks(data, ['ayah', 'nama_ayah'])),
-      MapEntry('Ibu', _teks(data, ['ibu', 'nama_ibu'])),
-      MapEntry('Wali', _teks(data, ['wali', 'nama_wali'])),
-      MapEntry('Asal sekolah', _teks(data, ['asal_sekolah', 'sekolah_asal'])),
-      MapEntry(
-        'Tgl diterima',
-        _teks(data, ['tgl_diterima', 'tanggal_diterima']),
-      ),
-      MapEntry(
-        'Tinggi / berat',
-        tinggiBerat.isEmpty ? _teks(data, ['tinggi_berat']) : tinggiBerat,
-      ),
-    ];
-  }
+  static const _baris = [
+    MapEntry('Nama', 'Indra Kusuma'),
+    MapEntry('NISN', '0098202509'),
+    MapEntry('NIS', '5509'),
+    MapEntry('TTL', 'Nganjuk, 10 Januari 2009'),
+    MapEntry('Agama', 'Islam'),
+    MapEntry('Alamat', 'Dsn. Kedungbulu'),
+    MapEntry('Ayah', 'Ayah Indra'),
+    MapEntry('Ibu', 'Ibu Indra'),
+    MapEntry('Wali', '-'),
+    MapEntry('Asal sekolah', 'SMPN 1 Rejoso'),
+    MapEntry('Tgl diterima', '17 Juli 2025'),
+    MapEntry('Tinggi / berat', '174 cm / 59 kg'),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -105,10 +48,14 @@ class _BiodataScreenState extends State<BiodataScreen> {
                 child: Row(
                   children: [
                     const SizedBox(width: 12),
-                    IconButton(
-                      tooltip: 'Kembali ke Home',
-                      onPressed: () => context.go('/home'),
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    Material(
+                      color: Colors.white.withValues(alpha: 0.14),
+                      shape: const CircleBorder(),
+                      child: IconButton(
+                        tooltip: 'Kembali ke Home',
+                        onPressed: () => context.go('/home'),
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      ),
                     ),
                     const Expanded(
                       child: Text(
@@ -126,102 +73,76 @@ class _BiodataScreenState extends State<BiodataScreen> {
                 ),
               ),
               Expanded(
-                child: FutureBuilder<Map<String, dynamic>>(
-                  future: _data,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState != ConnectionState.done) {
-                      return const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      );
-                    }
-
-                    if (snapshot.hasError) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Biodata gagal dimuat.\n${snapshot.error}',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: WarnaJosBook.teks,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              FilledButton.icon(
-                                onPressed: () {
-                                  setState(() => _data = _muat());
-                                },
-                                icon: const Icon(Icons.refresh),
-                                label: const Text('Coba lagi'),
-                              ),
-                            ],
-                          ),
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        'HANYA LIHAT',
+                        style: TextStyle(
+                          color: WarnaJosBook.navy,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
                         ),
-                      );
-                    }
-
-                    final data = snapshot.data!;
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        final dataBaru = _muat();
-                        setState(() => _data = dataBaru);
-                        await dataBaru;
-                      },
-                      child: ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Text(
-                              'HANYA LIHAT',
-                              style: TextStyle(
-                                color: WarnaJosBook.navy,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 9),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x22000000),
-                                  blurRadius: 5,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                for (final row in _baris(data))
-                                  _BarisBiodata(
-                                    label: row.key,
-                                    nilai: row.value,
-                                  ),
-                              ],
-                            ),
+                      ),
+                    ),
+                    const SizedBox(height: 9),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x22000000),
+                            blurRadius: 5,
+                            offset: Offset(0, 2),
                           ),
                         ],
                       ),
-                    );
-                  },
+                      child: Column(
+                        children: [
+                          for (final row in _baris)
+                            _BarisBiodata(label: row.key, nilai: row.value),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      height: 46,
+                      child: FilledButton.icon(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Fitur unduh biodata PDF akan tersedia nanti.',
+                              ),
+                            ),
+                          );
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: WarnaJosBook.navy,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        icon: const Icon(Icons.file_download_outlined),
+                        label: const Text('Unduh biodata (PDF)'),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
