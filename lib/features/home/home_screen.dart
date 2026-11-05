@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/api_client.dart';
+import '../../shared/widgets/navbar.dart';
 import '../auth/auth_provider.dart';
 
 /// Home SEMENTARA: hanya membuktikan aplikasi sudah terhubung ke Laravel
@@ -30,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const NavbarJosBook(aktif: TabNav.home),
       appBar: AppBar(
         title: const Text('JosBook'),
         actions: [
