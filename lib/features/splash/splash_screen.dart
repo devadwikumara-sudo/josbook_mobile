@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
-  /// Dipanggil setelah jeda splash selesai. Router yang menentukan
+  /// Dipanggil setelah animasi splash selesai. Router yang menentukan
   /// tujuan berikutnya (Login atau Home) berdasarkan status auth.
   final VoidCallback onSelesai;
 
@@ -11,19 +11,65 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _logoFade;
+  late final Animation<double> _logoScale;
+  late final Animation<Offset> _gelombangGeser;
+
   @override
   void initState() {
     super.initState();
-    _tungguLaluSelesai();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    );
+
+    // Gelombang naik dari bawah (0% - 60% durasi)
+    _gelombangGeser = Tween<Offset>(
+      begin: const Offset(0, 1),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    // Logo fade in (25% - 70% durasi)
+    _logoFade = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.25, 0.7, curve: Curves.easeOut),
+    );
+
+    // Logo membesar dengan efek membal halus (25% - 85% durasi)
+    _logoScale = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.25, 0.85, curve: Curves.easeOutBack),
+      ),
+    );
+
+    _jalankan();
   }
 
-  Future<void> _tungguLaluSelesai() async {
-    // Jeda splash 2 detik
-    await Future.delayed(const Duration(seconds: 2));
+  Future<void> _jalankan() async {
+    await _controller.forward();
+    if (!mounted) return;
+
+    // Tahan sebentar supaya logo sempat terbaca
+    await Future.delayed(const Duration(milliseconds: 500));
     if (!mounted) return;
 
     widget.onSelesai();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -37,17 +83,23 @@ class _SplashScreenState extends State<SplashScreen> {
           // Logo (sudah termasuk teks JOSBOOK dan tagline)
           Align(
             alignment: const Alignment(0, -0.2),
-            child: Image.asset(
-              'assets/images/josbook-logo.png',
-              width: layar.width * 0.65,
-              fit: BoxFit.contain,
-              errorBuilder: (_, _, _) => const Text(
-                'JOSBOOK',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF0055FF),
-                  letterSpacing: 1.5,
+            child: FadeTransition(
+              opacity: _logoFade,
+              child: ScaleTransition(
+                scale: _logoScale,
+                child: Image.asset(
+                  'assets/images/josbook-logo.png',
+                  width: layar.width * 0.65,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Text(
+                    'JOSBOOK',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF0055FF),
+                      letterSpacing: 1.5,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -58,10 +110,13 @@ class _SplashScreenState extends State<SplashScreen> {
             bottom: 0,
             left: 0,
             right: 0,
-            child: SizedBox(
-              height: layar.height * 0.32,
-              child: CustomPaint(
-                painter: WavePainter(),
+            child: SlideTransition(
+              position: _gelombangGeser,
+              child: SizedBox(
+                height: layar.height * 0.32,
+                child: CustomPaint(
+                  painter: WavePainter(),
+                ),
               ),
             ),
           ),

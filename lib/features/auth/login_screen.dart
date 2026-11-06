@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme.dart';
@@ -24,6 +25,15 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorLokal;
   bool _usernameBermasalah = false;
   bool _passwordBermasalah = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Bersihkan sisa error dari layar lain (misalnya layar Daftar).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<AuthProvider>().hapusError();
+    });
+  }
 
   @override
   void dispose() {
@@ -68,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     setState(() => _errorLokal = null);
-    await auth.login(_username.text, _password.text);
+    await auth.login(_username.text.trim(), _password.text);
     // Jika berhasil, router otomatis pindah ke Home.
   }
 
@@ -104,8 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
             TabAuth(
               masukAktif: true,
               onMasuk: () {},
-              onDaftar: () => _tampilkanInfo(
-                  'Halaman Daftar akan dibuat pada tahap berikutnya.'),
+              onDaftar: () => context.go('/daftar'),
             ),
             const SizedBox(height: 20),
             if (error != null)
@@ -115,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
               hint: 'Masukkan username',
               controller: _username,
               adaError: _usernameBermasalah,
-              keyboardType: TextInputType.text, // diubah dari emailAddress
+              keyboardType: TextInputType.text,
               textInputAction: TextInputAction.next,
               onChanged: (_) => _bersihkanError(),
             ),
@@ -183,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Image.asset(
       'assets/images/josbook-logo.png',
       height: 170,
-      errorBuilder: (_, _, _) => const SizedBox(
+      errorBuilder: (_, __, ___) => const SizedBox(
         height: 170,
         child: Center(
           child: Text(
