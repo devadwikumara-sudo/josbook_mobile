@@ -55,15 +55,15 @@ class _JosBookAppState extends State<JosBookApp> {
       routes: [
         GoRoute(
           path: '/mulai',
-          builder: (_, __) => SplashScreen(
+          builder: (_, _) => SplashScreen(
             onSelesai: () => _splashSelesai.value = true,
           ),
         ),
-        GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-        GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
-        GoRoute(path: '/biodata', builder: (_, __) => const BiodataScreen()),
-        GoRoute(path: '/nilai', builder: (_, __) => const NilaiScreen()),
-        GoRoute(path: '/unduh', builder: (_, __) => const UnduhScreen()),
+        GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+        GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
+        GoRoute(path: '/biodata', builder: (_, _) => const BiodataScreen()),
+        GoRoute(path: '/nilai', builder: (_, _) => const NilaiScreen()),
+        GoRoute(path: '/unduh', builder: (_, _) => const UnduhScreen()),
       ],
     );
   }
