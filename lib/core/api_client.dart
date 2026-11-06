@@ -19,22 +19,26 @@ class ApiException implements Exception {
 /// Otomatis menambah header Accept JSON dan Authorization Bearer.
 class ApiClient {
   ApiClient._() {
-    dio = Dio(BaseOptions(
-      baseUrl: AppConfig.baseUrl,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 30),
-      headers: {'Accept': 'application/json'},
-    ));
+    dio = Dio(
+      BaseOptions(
+        baseUrl: AppConfig.baseUrl,
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 30),
+        headers: {'Accept': 'application/json'},
+      ),
+    );
 
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = await tokenStorage.baca();
-        if (token != null && token.isNotEmpty) {
-          options.headers['Authorization'] = 'Bearer $token';
-        }
-        handler.next(options);
-      },
-    ));
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final token = await tokenStorage.baca();
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          handler.next(options);
+        },
+      ),
+    );
   }
 
   static final ApiClient instance = ApiClient._();
@@ -46,9 +50,34 @@ class ApiClient {
   /// (token dicabut / kedaluwarsa). Dipakai untuk memaksa kembali ke login.
   void Function()? onUnauthorized;
 
-  Future<Map<String, dynamic>> get(String path,
-          {Map<String, dynamic>? query}) =>
-      _jalankan(() => dio.get(path, queryParameters: query));
+  Future<Map<String, dynamic>> get(
+    String path, {
+    Map<String, dynamic>? query,
+  }) => _jalankan(() => dio.get(path, queryParameters: query));
+
+  Future<List<int>> getBytes(
+    String path, {
+    Map<String, dynamic>? query,
+    String? accept,
+  }) async {
+    try {
+      final response = await dio.get<List<int>>(
+        path,
+        queryParameters: query,
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: accept == null ? null : {'Accept': accept},
+        ),
+      );
+      final bytes = response.data;
+      if (bytes == null || bytes.isEmpty) {
+        throw const FormatException('File yang diterima dari server kosong.');
+      }
+      return bytes;
+    } on DioException catch (error) {
+      throw _ubah(error);
+    }
+  }
 
   Future<Map<String, dynamic>> post(String path, {Object? data}) =>
       _jalankan(() => dio.post(path, data: data));
@@ -60,7 +89,8 @@ class ApiClient {
       _jalankan(() => dio.delete(path));
 
   Future<Map<String, dynamic>> _jalankan(
-      Future<Response<dynamic>> Function() aksi) async {
+    Future<Response<dynamic>> Function() aksi,
+  ) async {
     try {
       final res = await aksi();
       final isi = res.data;

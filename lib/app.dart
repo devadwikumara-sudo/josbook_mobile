@@ -7,6 +7,8 @@ import 'features/auth/auth_provider.dart';
 import 'features/auth/login_screen.dart';
 import 'features/biodata/biodata_screen.dart';
 import 'features/home/home_screen.dart';
+import 'features/nilai/nilai_screen.dart';
+import 'features/unduh/unduh_screen.dart';
 
 class JosBookApp extends StatefulWidget {
   const JosBookApp({super.key});
@@ -47,6 +49,8 @@ class _JosBookAppState extends State<JosBookApp> {
         GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
         GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
         GoRoute(path: '/biodata', builder: (_, __) => const BiodataScreen()),
+        GoRoute(path: '/nilai', builder: (_, __) => const NilaiScreen()),
+        GoRoute(path: '/unduh', builder: (_, __) => const UnduhScreen()),
       ],
     );
   }
