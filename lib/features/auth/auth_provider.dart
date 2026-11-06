@@ -25,15 +25,15 @@ class AuthProvider extends ChangeNotifier {
 
   /// Dipanggil sekali saat aplikasi dibuka: cek apakah masih ada sesi.
   Future<void> mulai() async {
-    final token = await ApiClient.instance.tokenStorage.baca();
-
-    if (token == null || token.isEmpty) {
-      status = AuthStatus.belumLogin;
-      notifyListeners();
-      return;
-    }
-
     try {
+      final token = await ApiClient.instance.tokenStorage.baca();
+
+      if (token == null || token.isEmpty) {
+        status = AuthStatus.belumLogin;
+        notifyListeners();
+        return;
+      }
+
       final data = await _service.cekSesi();
       namaPengguna = (data['pengguna'] as Map?)?['nama'] as String?;
       status = AuthStatus.sudahLogin;
@@ -43,6 +43,9 @@ class AuthProvider extends ChangeNotifier {
       } else {
         pesanError = e.pesan;
       }
+      status = AuthStatus.belumLogin;
+    } catch (_) {
+      // Error tak terduga: jangan biarkan splash menahan selamanya.
       status = AuthStatus.belumLogin;
     }
 
@@ -63,6 +66,39 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } on ApiException catch (e) {
       pesanError = e.pesan;
+      return false;
+    } finally {
+      sedangMemproses = false;
+      notifyListeners();
+    }
+  }
+
+  /// Mendaftarkan akun baru. Mengembalikan true bila berhasil.
+  /// Setelah berhasil, pengguna diarahkan ke layar Login (tidak otomatis
+  /// masuk), jadi [status] sengaja tidak diubah di sini.
+  Future<bool> daftar({
+    required String nama,
+    required String nisn,
+    required String email,
+    required String password,
+  }) async {
+    sedangMemproses = true;
+    pesanError = null;
+    notifyListeners();
+
+    try {
+      await _service.daftar(
+        nama: nama.trim(),
+        nisn: nisn.trim(),
+        email: email.trim(),
+        password: password,
+      );
+      return true;
+    } on ApiException catch (e) {
+      pesanError = e.pesan;
+      return false;
+    } catch (_) {
+      pesanError = 'Pendaftaran gagal. Periksa koneksi lalu coba lagi.';
       return false;
     } finally {
       sedangMemproses = false;
