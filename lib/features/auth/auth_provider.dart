@@ -19,20 +19,29 @@ class AuthProvider extends ChangeNotifier {
   bool wajibGantiPassword = false;
   String? namaPengguna;
 
+  /// true saat aplikasi dibuka dan token lama masih berlaku: tampilkan layar
+  /// "Sesi Masih Aktif" dulu. Login baru tidak perlu konfirmasi ini.
+  bool perluKonfirmasiSesi = false;
+
+  /// true setelah login berhasil; dipakai sekali untuk menampilkan toast
+  /// "Login berhasil" di HomeScreen dan kemudian di-reset.
+  bool barusLogin = false;
+
   /// Dipanggil sekali saat aplikasi dibuka: cek apakah masih ada sesi.
   Future<void> mulai() async {
+    final token = await ApiClient.instance.tokenStorage.baca();
+
+    if (token == null || token.isEmpty) {
+      status = AuthStatus.belumLogin;
+      notifyListeners();
+      return;
+    }
+
     try {
-      final token = await ApiClient.instance.tokenStorage.baca();
-
-      if (token == null || token.isEmpty) {
-        status = AuthStatus.belumLogin;
-        notifyListeners();
-        return;
-      }
-
       final data = await _service.cekSesi();
       namaPengguna = (data['pengguna'] as Map?)?['nama'] as String?;
       perluKonfirmasiSesi = true;
+      barusLogin = false;
       status = AuthStatus.sudahLogin;
     } on ApiException catch (e) {
       if (e.statusCode == 401) {
@@ -40,9 +49,6 @@ class AuthProvider extends ChangeNotifier {
       } else {
         pesanError = e.pesan;
       }
-      status = AuthStatus.belumLogin;
-    } catch (_) {
-      // Error tak terduga: jangan biarkan splash menahan selamanya.
       status = AuthStatus.belumLogin;
     }
 
@@ -58,6 +64,8 @@ class AuthProvider extends ChangeNotifier {
       final data = await _service.login(username.trim(), password);
       wajibGantiPassword = data['wajib_ganti_password'] == true;
       namaPengguna = (data['pengguna'] as Map?)?['nama'] as String?;
+      perluKonfirmasiSesi = false;
+      barusLogin = true;
       status = AuthStatus.sudahLogin;
       return true;
     } on ApiException catch (e) {
@@ -69,9 +77,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Mendaftarkan akun baru. Mengembalikan true bila berhasil.
-  /// Setelah berhasil, pengguna diarahkan ke layar Login (tidak otomatis
-  /// masuk), jadi [status] sengaja tidak diubah di sini.
   Future<bool> daftar({
     required String nama,
     required String nisn,
@@ -84,17 +89,14 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       await _service.daftar(
-        nama: nama.trim(),
-        nisn: nisn.trim(),
-        email: email.trim(),
+        nama: nama,
+        nisn: nisn,
+        email: email,
         password: password,
       );
       return true;
     } on ApiException catch (e) {
       pesanError = e.pesan;
-      return false;
-    } catch (_) {
-      pesanError = 'Pendaftaran gagal. Periksa koneksi lalu coba lagi.';
       return false;
     } finally {
       sedangMemproses = false;
@@ -106,6 +108,7 @@ class AuthProvider extends ChangeNotifier {
     await _service.logout();
     status = AuthStatus.belumLogin;
     perluKonfirmasiSesi = false;
+    barusLogin = false;
     wajibGantiPassword = false;
     pesanError = null;
     notifyListeners();
@@ -116,10 +119,32 @@ class AuthProvider extends ChangeNotifier {
     await _service.logoutSemua();
     status = AuthStatus.belumLogin;
     perluKonfirmasiSesi = false;
+    barusLogin = false;
     wajibGantiPassword = false;
     pesanError = null;
-    barusLogin = false;
     notifyListeners();
+  }
+
+  /// Tombol "Lanjutkan" di layar "Sesi Masih Aktif".
+  void lanjutkanSesi() {
+    perluKonfirmasiSesi = false;
+    notifyListeners();
+  }
+
+  /// Dipanggil setelah Ganti Password berhasil (banner wajib-ganti hilang).
+  void tandaiPasswordSudahDiganti() {
+    if (wajibGantiPassword) {
+      wajibGantiPassword = false;
+      notifyListeners();
+    }
+  }
+
+  /// Dipanggil setelah HomeScreen menampilkan toast login.
+  void tandaiToastLoginSelesai() {
+    if (barusLogin) {
+      barusLogin = false;
+      notifyListeners();
+    }
   }
 
   void hapusError() {
@@ -134,6 +159,7 @@ class AuthProvider extends ChangeNotifier {
     if (status != AuthStatus.belumLogin) {
       status = AuthStatus.belumLogin;
       perluKonfirmasiSesi = false;
+      barusLogin = false;
       pesanError = 'Sesi Anda telah berakhir. Silakan login kembali.';
       notifyListeners();
     }

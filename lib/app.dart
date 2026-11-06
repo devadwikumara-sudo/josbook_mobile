@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'core/theme.dart';
 import 'features/auth/auth_provider.dart';
 import 'features/auth/login_screen.dart';
-import 'features/auth/register_screen.dart';
 import 'features/biodata/biodata_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/nilai/nilai_screen.dart';
@@ -29,7 +28,8 @@ class JosBookApp extends StatefulWidget {
 class _JosBookAppState extends State<JosBookApp> {
   late final GoRouter _router;
 
-  /// Menjadi true setelah animasi splash selesai.
+  /// Menjadi true setelah jeda splash selesai. Dipakai sebagai
+  /// refreshListenable tambahan agar router mengevaluasi ulang redirect.
   final ValueNotifier<bool> _splashSelesai = ValueNotifier<bool>(false);
 
   @override
@@ -43,7 +43,7 @@ class _JosBookAppState extends State<JosBookApp> {
       redirect: (context, state) {
         final lokasi = state.matchedLocation;
 
-        // Tahan di splash sampai animasi selesai DAN pengecekan auth selesai.
+        // Tahan di splash sampai jeda selesai DAN pengecekan auth selesai.
         final bool masihSplash =
             !_splashSelesai.value || auth.status == AuthStatus.memeriksa;
         if (masihSplash) {
@@ -54,18 +54,26 @@ class _JosBookAppState extends State<JosBookApp> {
           case AuthStatus.memeriksa:
             return lokasi == '/mulai' ? null : '/mulai';
           case AuthStatus.belumLogin:
-            // Login dan Daftar sama-sama boleh diakses saat belum login.
-            return (lokasi == '/login' || lokasi == '/daftar')
-                ? null
-                : '/login';
+            return lokasi == '/login' ? null : '/login';
           case AuthStatus.sudahLogin:
-            return (lokasi == '/mulai' || lokasi == '/login') ? '/home' : null;
+            // Aplikasi baru dibuka & token lama masih berlaku: konfirmasi dulu.
+            if (auth.perluKonfirmasiSesi) {
+              final boleh =
+                  lokasi == '/sesi-aktif' || lokasi == '/logout-semua';
+              return boleh ? null : '/sesi-aktif';
+            }
+            if (lokasi == '/mulai' ||
+                lokasi == '/login' ||
+                lokasi == '/sesi-aktif') {
+              return '/home';
+            }
+            return null;
         }
       },
       routes: [
         GoRoute(
           path: '/mulai',
-          builder: (_, __) => SplashScreen(
+          builder: (_, _) => SplashScreen(
             onSelesai: () => _splashSelesai.value = true,
           ),
         ),
@@ -74,6 +82,33 @@ class _JosBookAppState extends State<JosBookApp> {
         GoRoute(path: '/biodata', builder: (_, _) => const BiodataScreen()),
         GoRoute(path: '/nilai', builder: (_, _) => const NilaiScreen()),
         GoRoute(path: '/unduh', builder: (_, _) => const UnduhScreen()),
+        GoRoute(path: '/profil', builder: (_, _) => const ProfilScreen()),
+        GoRoute(
+          path: '/profil/data-diri',
+          builder: (_, _) => const DataDiriScreen(),
+        ),
+        GoRoute(
+          path: '/profil/edit',
+          builder: (_, _) => const EditProfilScreen(),
+        ),
+        GoRoute(
+          path: '/profil/ganti-password',
+          builder: (_, _) => const GantiPasswordScreen(),
+        ),
+        GoRoute(
+          path: '/profil/bantuan',
+          builder: (_, _) => const BantuanScreen(),
+        ),
+        GoRoute(
+          path: '/sesi-aktif',
+          builder: (_, _) => const SesiAktifScreen(),
+        ),
+        GoRoute(
+          path: '/logout-semua',
+          builder: (_, state) => LogoutSemuaScreen(
+            dari: state.uri.queryParameters['dari'] ?? 'profil',
+          ),
+        ),
       ],
     );
   }

@@ -30,7 +30,7 @@ class HeaderHome extends StatelessWidget {
           child: Image.asset(
             'assets/images/josbook-logo.png',
             fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) =>
+            errorBuilder: (context, error, stackTrace) =>
                 const Icon(Icons.school_rounded, color: Color(0xFF062A6B)),
           ),
         ),

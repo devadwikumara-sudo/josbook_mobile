@@ -39,8 +39,7 @@ class AuthService {
     return data;
   }
 
-  /// POST /daftar — mendaftarkan akun siswa baru.
-  /// Tidak menyimpan token: setelah berhasil, pengguna diarahkan ke Login.
+  /// POST /register — mendaftarkan akun siswa baru.
   Future<void> daftar({
     required String nama,
     required String nisn,
@@ -48,17 +47,15 @@ class AuthService {
     required String password,
   }) async {
     if (_pakaiMock) {
-      await _daftarMock(nisn: nisn, email: email);
+      await Future<void>.delayed(const Duration(milliseconds: 700));
       return;
     }
 
-    await _api.post('/daftar', data: {
+    await _api.post('/register', data: {
       'nama': nama,
       'nisn': nisn,
       'email': email,
       'password': password,
-      // Jika Laravel memakai aturan "confirmed", aktifkan baris ini:
-      // 'password_confirmation': password,
     });
   }
 
@@ -118,22 +115,6 @@ class AuthService {
         'wajib_ganti_password': false,
         'pengguna': {'nama': 'Indra Kusuma', 'peran': 'siswa'},
       };
-
-  /// Pendaftaran contoh: NISN 0098202509 dianggap sudah terdaftar.
-  Future<void> _daftarMock({
-    required String nisn,
-    required String email,
-  }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 700));
-
-    if (nisn == '0098202509') {
-      throw ApiException(
-        'NISN sudah terdaftar.',
-        kode: 'nisn_terdaftar',
-        statusCode: 422,
-      );
-    }
-  }
 
   /// Akun contoh: siswa 0098202509 / 12345678, guru guru1 / 12345678.
   Future<Map<String, dynamic>> _loginMock(

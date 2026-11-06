@@ -192,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Image.asset(
       'assets/images/josbook-logo.png',
       height: 170,
-      errorBuilder: (_, __, ___) => const SizedBox(
+      errorBuilder: (context, error, stackTrace) => const SizedBox(
         height: 170,
         child: Center(
           child: Text(

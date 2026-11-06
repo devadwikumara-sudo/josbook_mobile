@@ -110,7 +110,7 @@ class AvatarSiswa extends StatelessWidget {
               : Image.network(
                   fotoUrl!,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => inisial,
+                  errorBuilder: (context, error, stackTrace) => inisial,
                 ),
         ),
       ),

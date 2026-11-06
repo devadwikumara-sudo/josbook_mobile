@@ -91,7 +91,7 @@ class _SplashScreenState extends State<SplashScreen>
                   'assets/images/josbook-logo.png',
                   width: layar.width * 0.65,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Text(
+                  errorBuilder: (context, error, stackTrace) => const Text(
                     'JOSBOOK',
                     style: TextStyle(
                       fontSize: 32,
