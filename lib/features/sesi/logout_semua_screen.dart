@@ -79,7 +79,7 @@ class _LogoutSemuaScreenState extends State<LogoutSemuaScreen> {
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  'Anda akan keluar dari semua perangkat yang sedang login.',
+                  'Anda akan keluar dari perangkat yang sedang login.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 13,
@@ -109,7 +109,7 @@ class _LogoutSemuaScreenState extends State<LogoutSemuaScreen> {
                             ),
                           )
                         : const Text(
-                            'Logout Semua',
+                            'Logout',
                             style: TextStyle(
                                 fontWeight: FontWeight.w800, fontSize: 14),
                           ),
