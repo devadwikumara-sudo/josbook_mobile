@@ -8,6 +8,7 @@ import 'features/auth/login_screen.dart';
 import 'features/biodata/biodata_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/nilai/nilai_screen.dart';
+import 'features/splash/splash_screen.dart';
 import 'features/unduh/unduh_screen.dart';
 
 class JosBookApp extends StatefulWidget {
@@ -20,6 +21,10 @@ class JosBookApp extends StatefulWidget {
 class _JosBookAppState extends State<JosBookApp> {
   late final GoRouter _router;
 
+  /// Menjadi true setelah jeda splash selesai. Dipakai sebagai
+  /// refreshListenable tambahan agar router mengevaluasi ulang redirect.
+  final ValueNotifier<bool> _splashSelesai = ValueNotifier<bool>(false);
+
   @override
   void initState() {
     super.initState();
@@ -27,9 +32,16 @@ class _JosBookAppState extends State<JosBookApp> {
 
     _router = GoRouter(
       initialLocation: '/mulai',
-      refreshListenable: auth,
+      refreshListenable: Listenable.merge([auth, _splashSelesai]),
       redirect: (context, state) {
         final lokasi = state.matchedLocation;
+
+        // Tahan di splash sampai jeda selesai DAN pengecekan auth selesai.
+        final bool masihSplash =
+            !_splashSelesai.value || auth.status == AuthStatus.memeriksa;
+        if (masihSplash) {
+          return lokasi == '/mulai' ? null : '/mulai';
+        }
 
         switch (auth.status) {
           case AuthStatus.memeriksa:
@@ -43,8 +55,9 @@ class _JosBookAppState extends State<JosBookApp> {
       routes: [
         GoRoute(
           path: '/mulai',
-          builder: (_, __) =>
-              const Scaffold(body: Center(child: CircularProgressIndicator())),
+          builder: (_, __) => SplashScreen(
+            onSelesai: () => _splashSelesai.value = true,
+          ),
         ),
         GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
         GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
@@ -53,6 +66,13 @@ class _JosBookAppState extends State<JosBookApp> {
         GoRoute(path: '/unduh', builder: (_, __) => const UnduhScreen()),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    _router.dispose();
+    _splashSelesai.dispose();
+    super.dispose();
   }
 
   @override

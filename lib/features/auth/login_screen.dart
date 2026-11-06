@@ -115,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
               hint: 'Masukkan username',
               controller: _username,
               adaError: _usernameBermasalah,
-              keyboardType: TextInputType.emailAddress,
+              keyboardType: TextInputType.text, // diubah dari emailAddress
               textInputAction: TextInputAction.next,
               onChanged: (_) => _bersihkanError(),
             ),

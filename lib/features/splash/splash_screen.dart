@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
   /// Dipanggil setelah jeda splash selesai. Router yang menentukan
-  /// tujuan berikutnya (Login atau Home).
+  /// tujuan berikutnya (Login atau Home) berdasarkan status auth.
   final VoidCallback onSelesai;
 
   const SplashScreen({super.key, required this.onSelesai});
@@ -28,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Size layar = MediaQuery.of(context).size;
+    final Size layar = MediaQuery.sizeOf(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
