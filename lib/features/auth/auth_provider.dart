@@ -19,6 +19,10 @@ class AuthProvider extends ChangeNotifier {
   bool wajibGantiPassword = false;
   String? namaPengguna;
 
+  /// true sesaat setelah login berhasil; dipakai Home untuk menampilkan toast
+  /// "Login berhasil" satu kali saja (bukan saat sesi lama dipulihkan).
+  bool barusLogin = false;
+
   /// Dipanggil sekali saat aplikasi dibuka: cek apakah masih ada sesi.
   Future<void> mulai() async {
     final token = await ApiClient.instance.tokenStorage.baca();
@@ -54,6 +58,7 @@ class AuthProvider extends ChangeNotifier {
       final data = await _service.login(username.trim(), password);
       wajibGantiPassword = data['wajib_ganti_password'] == true;
       namaPengguna = (data['pengguna'] as Map?)?['nama'] as String?;
+      barusLogin = true;
       status = AuthStatus.sudahLogin;
       return true;
     } on ApiException catch (e) {
@@ -69,7 +74,13 @@ class AuthProvider extends ChangeNotifier {
     await _service.logout();
     status = AuthStatus.belumLogin;
     pesanError = null;
+    barusLogin = false;
     notifyListeners();
+  }
+
+  /// Dipanggil Home setelah toast "Login berhasil" ditampilkan.
+  void tandaiToastLoginSelesai() {
+    barusLogin = false;
   }
 
   void hapusError() {
