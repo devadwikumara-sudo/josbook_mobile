@@ -9,3 +9,9 @@ class AppConfig {
     defaultValue: 'http://10.0.2.2:8000/api/v1',
   );
 }
+/// Nomor WhatsApp admin sekolah untuk tombol "Chat Admin" (format 62812…, tanpa +).
+/// Isi saat menjalankan/membangun aplikasi:
+///   flutter run --dart-define=ADMIN_WA=6281234567890
+class KontakAdmin {
+  static const String whatsapp = String.fromEnvironment('ADMIN_WA');
+}

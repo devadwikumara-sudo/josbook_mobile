@@ -59,6 +59,18 @@ class AuthService {
     await _api.tokenStorage.hapus();
   }
 
+  /// DELETE /sesi — keluar dari SEMUA perangkat, lalu hapus token lokal.
+  Future<void> logoutSemua() async {
+    if (!_pakaiMock) {
+      try {
+        await _api.delete('/sesi');
+      } on ApiException {
+        // Jaringan/token sudah tidak valid: tetap hapus token lokal.
+      }
+    }
+    await _api.tokenStorage.hapus();
+  }
+
   Future<Map<String, dynamic>> _loginServer(
       String username, String password) async {
     final res = await _api.post('/login', data: {

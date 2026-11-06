@@ -19,6 +19,10 @@ class AuthProvider extends ChangeNotifier {
   bool wajibGantiPassword = false;
   String? namaPengguna;
 
+  /// true saat aplikasi dibuka dan token lama masih berlaku: tampilkan layar
+  /// "Sesi Masih Aktif" dulu. Login baru tidak perlu konfirmasi ini.
+  bool perluKonfirmasiSesi = false;
+
   /// Dipanggil sekali saat aplikasi dibuka: cek apakah masih ada sesi.
   Future<void> mulai() async {
     final token = await ApiClient.instance.tokenStorage.baca();
@@ -32,6 +36,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       final data = await _service.cekSesi();
       namaPengguna = (data['pengguna'] as Map?)?['nama'] as String?;
+      perluKonfirmasiSesi = true;
       status = AuthStatus.sudahLogin;
     } on ApiException catch (e) {
       if (e.statusCode == 401) {
@@ -54,6 +59,7 @@ class AuthProvider extends ChangeNotifier {
       final data = await _service.login(username.trim(), password);
       wajibGantiPassword = data['wajib_ganti_password'] == true;
       namaPengguna = (data['pengguna'] as Map?)?['nama'] as String?;
+      perluKonfirmasiSesi = false;
       status = AuthStatus.sudahLogin;
       return true;
     } on ApiException catch (e) {
@@ -68,8 +74,34 @@ class AuthProvider extends ChangeNotifier {
   Future<void> logout() async {
     await _service.logout();
     status = AuthStatus.belumLogin;
+    perluKonfirmasiSesi = false;
+    wajibGantiPassword = false;
     pesanError = null;
     notifyListeners();
+  }
+
+  /// Layar "Logout dari semua perangkat?" -> DELETE /sesi.
+  Future<void> logoutSemua() async {
+    await _service.logoutSemua();
+    status = AuthStatus.belumLogin;
+    perluKonfirmasiSesi = false;
+    wajibGantiPassword = false;
+    pesanError = null;
+    notifyListeners();
+  }
+
+  /// Tombol "Lanjutkan" di layar "Sesi Masih Aktif".
+  void lanjutkanSesi() {
+    perluKonfirmasiSesi = false;
+    notifyListeners();
+  }
+
+  /// Dipanggil setelah Ganti Password berhasil (banner wajib-ganti hilang).
+  void tandaiPasswordSudahDiganti() {
+    if (wajibGantiPassword) {
+      wajibGantiPassword = false;
+      notifyListeners();
+    }
   }
 
   void hapusError() {
@@ -83,6 +115,7 @@ class AuthProvider extends ChangeNotifier {
     ApiClient.instance.tokenStorage.hapus();
     if (status != AuthStatus.belumLogin) {
       status = AuthStatus.belumLogin;
+      perluKonfirmasiSesi = false;
       pesanError = 'Sesi Anda telah berakhir. Silakan login kembali.';
       notifyListeners();
     }

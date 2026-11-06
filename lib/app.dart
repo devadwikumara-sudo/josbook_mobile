@@ -8,6 +8,13 @@ import 'features/auth/login_screen.dart';
 import 'features/biodata/biodata_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/nilai/nilai_screen.dart';
+import 'features/profil/bantuan_screen.dart';
+import 'features/profil/data_diri_screen.dart';
+import 'features/profil/edit_profil_screen.dart';
+import 'features/profil/ganti_password_screen.dart';
+import 'features/profil/profil_screen.dart';
+import 'features/sesi/logout_semua_screen.dart';
+import 'features/sesi/sesi_aktif_screen.dart';
 import 'features/splash/splash_screen.dart';
 import 'features/unduh/unduh_screen.dart';
 
@@ -49,7 +56,18 @@ class _JosBookAppState extends State<JosBookApp> {
           case AuthStatus.belumLogin:
             return lokasi == '/login' ? null : '/login';
           case AuthStatus.sudahLogin:
-            return (lokasi == '/mulai' || lokasi == '/login') ? '/home' : null;
+            // Aplikasi baru dibuka & token lama masih berlaku: konfirmasi dulu.
+            if (auth.perluKonfirmasiSesi) {
+              final boleh =
+                  lokasi == '/sesi-aktif' || lokasi == '/logout-semua';
+              return boleh ? null : '/sesi-aktif';
+            }
+            if (lokasi == '/mulai' ||
+                lokasi == '/login' ||
+                lokasi == '/sesi-aktif') {
+              return '/home';
+            }
+            return null;
         }
       },
       routes: [
@@ -64,6 +82,33 @@ class _JosBookAppState extends State<JosBookApp> {
         GoRoute(path: '/biodata', builder: (_, _) => const BiodataScreen()),
         GoRoute(path: '/nilai', builder: (_, _) => const NilaiScreen()),
         GoRoute(path: '/unduh', builder: (_, _) => const UnduhScreen()),
+        GoRoute(path: '/profil', builder: (_, _) => const ProfilScreen()),
+        GoRoute(
+          path: '/profil/data-diri',
+          builder: (_, _) => const DataDiriScreen(),
+        ),
+        GoRoute(
+          path: '/profil/edit',
+          builder: (_, _) => const EditProfilScreen(),
+        ),
+        GoRoute(
+          path: '/profil/ganti-password',
+          builder: (_, _) => const GantiPasswordScreen(),
+        ),
+        GoRoute(
+          path: '/profil/bantuan',
+          builder: (_, _) => const BantuanScreen(),
+        ),
+        GoRoute(
+          path: '/sesi-aktif',
+          builder: (_, _) => const SesiAktifScreen(),
+        ),
+        GoRoute(
+          path: '/logout-semua',
+          builder: (_, state) => LogoutSemuaScreen(
+            dari: state.uri.queryParameters['dari'] ?? 'profil',
+          ),
+        ),
       ],
     );
   }
