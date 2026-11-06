@@ -99,7 +99,7 @@ class BiodataScreen extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
                         vertical: 12,
-                      ),
+                      ),  
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
