@@ -7,12 +7,12 @@ class HeaderHome extends StatelessWidget {
   const HeaderHome({
     super.key,
     required this.sekolah,
-    required this.adaNotifikasiBaru,
+    required this.jumlahBelumDibaca,
     required this.onNotifikasi,
   });
 
   final String sekolah;
-  final bool adaNotifikasiBaru;
+  final int jumlahBelumDibaca;
   final VoidCallback onNotifikasi;
 
   @override
@@ -59,8 +59,8 @@ class HeaderHome extends StatelessWidget {
         const SizedBox(width: 8),
         Semantics(
           button: true,
-          label: adaNotifikasiBaru
-              ? 'Notifikasi, ada yang belum dibaca'
+          label: jumlahBelumDibaca > 0
+              ? 'Notifikasi, $jumlahBelumDibaca belum dibaca'
               : 'Notifikasi',
           child: Material(
             color: Colors.white.withValues(alpha: 0.18),
@@ -74,20 +74,47 @@ class HeaderHome extends StatelessWidget {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    const Icon(Icons.notifications_none_rounded,
-                        color: Colors.white),
-                    if (adaNotifikasiBaru)
+                    const Icon(
+                      Icons.notifications_none_rounded,
+                      color: Colors.white,
+                    ),
+                    if (jumlahBelumDibaca > 0)
                       Positioned(
-                        right: 12,
-                        top: 11,
-                        child: Container(
-                          width: 9,
-                          height: 9,
-                          decoration: const BoxDecoration(
-                            color: HomeWarna.merahTitik,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
+                        right: 5,
+                        top: 4,
+                        child: jumlahBelumDibaca > 9
+                            ? Container(
+                                constraints: const BoxConstraints(
+                                  minWidth: 17,
+                                  minHeight: 17,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                alignment: Alignment.center,
+                                decoration: const BoxDecoration(
+                                  color: HomeWarna.merahTitik,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  jumlahBelumDibaca > 99
+                                      ? '99+'
+                                      : '$jumlahBelumDibaca',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                width: 9,
+                                height: 9,
+                                decoration: const BoxDecoration(
+                                  color: HomeWarna.merahTitik,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
                       ),
                   ],
                 ),

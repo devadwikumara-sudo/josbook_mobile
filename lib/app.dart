@@ -13,6 +13,7 @@ import 'features/auth/register_screen.dart';
 import 'features/biodata/biodata_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/nilai/nilai_screen.dart';
+import 'features/notifikasi/notifikasi_screen.dart';
 import 'features/profil/bantuan_screen.dart';
 import 'features/profil/data_diri_screen.dart';
 import 'features/profil/edit_profil_screen.dart';
@@ -119,6 +120,10 @@ class _JosBookAppState extends State<JosBookApp> {
           builder: (_, _) => const LupaPasswordSuksesScreen(),
         ),
         GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
+        GoRoute(
+          path: '/notifikasi',
+          builder: (_, _) => const NotifikasiScreen(),
+        ),
         GoRoute(path: '/biodata', builder: (_, _) => const BiodataScreen()),
         GoRoute(path: '/nilai', builder: (_, _) => const NilaiScreen()),
         GoRoute(path: '/unduh', builder: (_, _) => const UnduhScreen()),

@@ -11,6 +11,9 @@ import '../auth/auth_provider.dart';
 import 'home_data.dart';
 import 'home_service.dart';
 import 'home_warna.dart';
+import '../notifikasi/notifikasi_model.dart';
+import '../notifikasi/notifikasi_provider.dart';
+import '../notifikasi/notifikasi_service.dart';
 import 'widgets/aktivitas_home.dart';
 import 'widgets/header_home.dart';
 import 'widgets/ringkasan_home.dart';
@@ -20,7 +23,9 @@ import 'widgets/toast_login.dart';
 
 /// Layar Home / Dashboard siswa.
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.notifikasiService});
+
+  final NotifikasiService? notifikasiService;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -28,6 +33,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final HomeService _service = HomeService();
+  late final NotifikasiProvider _notifikasiProvider;
 
   HomeData? _data;
   String? _pesanError;
@@ -39,6 +45,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _notifikasiProvider = NotifikasiProvider(
+      service: widget.notifikasiService ?? HttpNotifikasiService(),
+    );
+    unawaited(_notifikasiProvider.muat());
     _muat();
     WidgetsBinding.instance.addPostFrameCallback((_) => _cekToastLogin());
   }
@@ -46,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _timerToast?.cancel();
+    _notifikasiProvider.dispose();
     super.dispose();
   }
 
@@ -100,8 +111,10 @@ class _HomeScreenState extends State<HomeScreen> {
       ..showSnackBar(SnackBar(content: Text(pesan)));
   }
 
-  void _bukaNotifikasi() =>
-      _info('Halaman Notifikasi akan dibuat pada tahap berikutnya.');
+  Future<void> _bukaNotifikasi() async {
+    await context.push<void>('/notifikasi');
+    if (mounted) unawaited(_notifikasiProvider.muat());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +136,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Stack(
           children: [
-            SafeArea(bottom: false, child: _isi()),
+            SafeArea(
+              bottom: false,
+              child: AnimatedBuilder(
+                animation: _notifikasiProvider,
+                builder: (context, _) => _isi(),
+              ),
+            ),
             Positioned(
               top: 0,
               left: 16,
@@ -168,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           HeaderHome(
             sekolah: data.sekolah,
-            adaNotifikasiBaru: data.adaNotifikasiBaru,
+            jumlahBelumDibaca: _notifikasiProvider.jumlahBelumDibaca,
             onNotifikasi: _bukaNotifikasi,
           ),
           const SizedBox(height: 24),
@@ -187,14 +206,26 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 24),
           AktivitasHome(
-            items: data.aktivitas,
+            items: _notifikasiProvider.items
+                .take(3)
+                .map(_aktivitasDariNotifikasi)
+                .toList(growable: false),
             onItem: _bukaNotifikasi,
             onLihatSemua: _bukaNotifikasi,
+            memuat: _notifikasiProvider.memuat,
+            pesanError: _notifikasiProvider.error,
+            onUlang: () => unawaited(_notifikasiProvider.muat()),
           ),
         ],
       ),
     );
   }
+
+  ItemAktivitas _aktivitasDariNotifikasi(Notifikasi item) => ItemAktivitas(
+    judul: item.judul,
+    waktu: formatWaktuWib(item.waktu),
+    peringatan: item.jenis.toLowerCase() == 'peringatan',
+  );
 
   Widget _bannerGantiPassword() {
     return Container(

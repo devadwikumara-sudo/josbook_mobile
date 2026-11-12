@@ -11,11 +11,17 @@ class AktivitasHome extends StatelessWidget {
     required this.items,
     required this.onItem,
     required this.onLihatSemua,
+    this.memuat = false,
+    this.pesanError,
+    this.onUlang,
   });
 
   final List<ItemAktivitas> items;
   final VoidCallback onItem;
   final VoidCallback onLihatSemua;
+  final bool memuat;
+  final String? pesanError;
+  final VoidCallback? onUlang;
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +75,36 @@ class AktivitasHome extends StatelessWidget {
               ),
             ],
           ),
-          child: items.isEmpty
+          child: memuat
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 22),
+                  child: Center(
+                    child: SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                )
+              : pesanError != null && items.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Aktivitas gagal dimuat.\n$pesanError',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: HomeWarna.teksPudar),
+                      ),
+                      if (onUlang != null)
+                        TextButton(
+                          onPressed: onUlang,
+                          child: const Text('Coba lagi'),
+                        ),
+                    ],
+                  ),
+                )
+              : items.isEmpty
               ? const Padding(
                   padding: EdgeInsets.symmetric(vertical: 24),
                   child: Center(
@@ -155,8 +190,10 @@ class _Baris extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded,
-                  color: HomeWarna.teksPudar),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: HomeWarna.teksPudar,
+              ),
             ],
           ),
         ),
