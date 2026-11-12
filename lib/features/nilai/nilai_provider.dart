@@ -103,5 +103,5 @@ class NilaiProvider extends ChangeNotifier {
   }
 
   String _pesanError(Object error) =>
-      error is ApiException ? error.pesan : error.toString();
+      error is ApiException ? error.pesan : 'Terjadi kesalahan. Coba lagi.';
 }

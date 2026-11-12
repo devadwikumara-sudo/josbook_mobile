@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/api_client.dart';
 import '../../core/theme.dart';
 import '../../shared/widgets/navbar.dart';
+import '../../shared/widgets/state_views.dart';
 import '../nilai/nilai_model.dart';
 import '../nilai/nilai_service.dart';
 import 'unduh_service.dart';
@@ -88,7 +90,9 @@ class _UnduhScreenState extends State<UnduhScreen> {
         ..hideCurrentSnackBar()
         ..showSnackBar(
           SnackBar(
-            content: Text('Unduhan gagal: $error'),
+            content: Text(
+              'Unduhan gagal: ${error is ApiException ? error.pesan : 'Coba lagi.'}',
+            ),
             backgroundColor: WarnaJosBook.merah,
           ),
         );
@@ -316,33 +320,27 @@ class _UnduhScreenState extends State<UnduhScreen> {
   }
 
   Widget _pesanErrorPeriode() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Periode unduhan gagal dimuat.\n${_errorPeriode.toString()}',
-          style: const TextStyle(
-            color: WarnaJosBook.merah,
-            fontSize: 12,
-            height: 1.35,
-          ),
-        ),
-        TextButton.icon(
-          onPressed: _muatPeriode,
-          icon: const Icon(Icons.refresh, size: 18),
-          label: const Text('Coba lagi'),
-        ),
-      ],
+    return ErrorStateView(
+      message:
+          'Periode unduhan gagal dimuat.\n'
+          '${_errorPeriode is ApiException ? (_errorPeriode as ApiException).pesan : 'Terjadi kesalahan. Coba lagi.'}',
+      onRetry: _muatPeriode,
+      compact: true,
+      alignment: CrossAxisAlignment.start,
+      retryIcon: Icons.refresh,
+      messageStyle: const TextStyle(
+        color: WarnaJosBook.merah,
+        fontSize: 12,
+        height: 1.35,
+      ),
     );
   }
 
   Widget _pesanKosongPeriode() {
-    return const Padding(
+    return const EmptyStateView(
+      message: 'Belum ada periode yang bisa diunduh.',
       padding: EdgeInsets.symmetric(vertical: 12),
-      child: Text(
-        'Belum ada periode yang bisa diunduh.',
-        style: TextStyle(color: Color(0xFF758396), fontSize: 12),
-      ),
+      textStyle: TextStyle(color: Color(0xFF758396), fontSize: 12),
     );
   }
 }

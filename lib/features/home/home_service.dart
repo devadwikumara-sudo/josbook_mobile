@@ -5,7 +5,8 @@ import 'home_data.dart';
 
 /// Sama seperti AuthService: data contoh hanya aktif di mode debug dan bila
 /// dijalankan dengan  flutter run --dart-define=MOCK_AUTH=true
-const bool _pakaiMock = kDebugMode && bool.fromEnvironment('MOCK_AUTH');
+const bool _pakaiMock =
+    kDebugMode && bool.fromEnvironment('MOCK_AUTH', defaultValue: false);
 
 /// Panggilan API untuk layar Home. Tidak menyimpan state.
 class HomeService {

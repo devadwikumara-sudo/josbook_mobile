@@ -8,7 +8,7 @@ enum AuthStatus { memeriksa, belumLogin, sudahLogin }
 /// State login untuk seluruh aplikasi (dibaca oleh router dan layar).
 class AuthProvider extends ChangeNotifier {
   AuthProvider() {
-    ApiClient.instance.onUnauthorized = _sesiBerakhir;
+    ApiClient.instance.onUnauthorized = _tanganiSesiBerakhir;
   }
 
   final AuthService _service = AuthService();
@@ -21,6 +21,7 @@ class AuthProvider extends ChangeNotifier {
   int? otpSisaDetik;
   int? otpSisaPercobaan;
   bool wajibGantiPassword = false;
+  bool sesiBerakhir = false;
   String? namaPengguna;
 
   /// State sementara untuk alur lupa kata sandi: password baru dan token reset
@@ -54,9 +55,7 @@ class AuthProvider extends ChangeNotifier {
       barusLogin = false;
       status = AuthStatus.sudahLogin;
     } on ApiException catch (e) {
-      if (e.statusCode == 401) {
-        await ApiClient.instance.tokenStorage.hapus();
-      } else {
+      if (e.statusCode != 401) {
         pesanError = e.pesan;
       }
       status = AuthStatus.belumLogin;
@@ -68,6 +67,7 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> login(String username, String password) async {
     sedangMemproses = true;
     pesanError = null;
+    sesiBerakhir = false;
     kodeError = null;
     dataError = null;
     notifyListeners();
@@ -97,6 +97,7 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     sedangMemproses = true;
     pesanError = null;
+    sesiBerakhir = false;
     kodeError = null;
     dataError = null;
     notifyListeners();
@@ -123,6 +124,7 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     sedangMemproses = true;
     pesanError = null;
+    sesiBerakhir = false;
     kodeError = null;
     dataError = null;
     hapusMemoriLupaPassword();
@@ -152,6 +154,7 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     sedangMemproses = true;
     pesanError = null;
+    sesiBerakhir = false;
     kodeError = null;
     dataError = null;
     otpSisaPercobaan = null;
@@ -211,6 +214,7 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     sedangMemproses = true;
     pesanError = null;
+    sesiBerakhir = false;
     kodeError = null;
     dataError = null;
     otpSisaDetik = null;
@@ -242,6 +246,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> logout() async {
     await _service.logout();
     status = AuthStatus.belumLogin;
+    sesiBerakhir = false;
     perluKonfirmasiSesi = false;
     barusLogin = false;
     wajibGantiPassword = false;
@@ -253,6 +258,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> logoutSemua() async {
     await _service.logoutSemua();
     status = AuthStatus.belumLogin;
+    sesiBerakhir = false;
     perluKonfirmasiSesi = false;
     barusLogin = false;
     wajibGantiPassword = false;
@@ -286,11 +292,13 @@ class AuthProvider extends ChangeNotifier {
     if (pesanError != null ||
         kodeError != null ||
         dataError != null ||
-        otpSisaPercobaan != null) {
+        otpSisaPercobaan != null ||
+        sesiBerakhir) {
       pesanError = null;
       kodeError = null;
       dataError = null;
       otpSisaPercobaan = null;
+      sesiBerakhir = false;
       notifyListeners();
     }
   }
@@ -305,6 +313,7 @@ class AuthProvider extends ChangeNotifier {
   void batalkanLupaPassword() {
     hapusMemoriLupaPassword();
     pesanError = null;
+    sesiBerakhir = false;
     kodeError = null;
     dataError = null;
     otpSisaDetik = null;
@@ -312,14 +321,22 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _sesiBerakhir() {
-    ApiClient.instance.tokenStorage.hapus();
-    if (status != AuthStatus.belumLogin) {
-      status = AuthStatus.belumLogin;
-      perluKonfirmasiSesi = false;
-      barusLogin = false;
-      pesanError = 'Sesi Anda telah berakhir. Silakan login kembali.';
-      notifyListeners();
-    }
+  Future<void> _tanganiSesiBerakhir() async {
+    status = AuthStatus.belumLogin;
+    sedangMemproses = false;
+    perluKonfirmasiSesi = false;
+    barusLogin = false;
+    wajibGantiPassword = false;
+    namaPengguna = null;
+    lupaPasswordEmail = null;
+    lupaPasswordPasswordBaru = null;
+    lupaPasswordResetToken = null;
+    otpSisaDetik = null;
+    otpSisaPercobaan = null;
+    pesanError = 'Sesi berakhir, silakan masuk lagi';
+    kodeError = null;
+    dataError = null;
+    sesiBerakhir = true;
+    notifyListeners();
   }
 }

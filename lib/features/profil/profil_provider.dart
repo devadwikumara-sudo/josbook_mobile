@@ -28,8 +28,10 @@ class ProfilProvider extends ChangeNotifier {
         final bytes = await _service.ambilFoto();
         foto = bytes == null ? null : Uint8List.fromList(bytes);
       }
-    } on ApiException catch (e) {
-      error = e.pesan;
+    } catch (e) {
+      error = e is ApiException
+          ? e.pesan
+          : 'Terjadi kesalahan saat memuat profil. Coba lagi.';
     } finally {
       memuat = false;
       notifyListeners();
@@ -42,7 +44,11 @@ class ProfilProvider extends ChangeNotifier {
     required String nomorHp,
     required String alamat,
   }) async {
-    data = await _service.simpan(email: email, nomorHp: nomorHp, alamat: alamat);
+    data = await _service.simpan(
+      email: email,
+      nomorHp: nomorHp,
+      alamat: alamat,
+    );
     notifyListeners();
   }
 
@@ -50,8 +56,7 @@ class ProfilProvider extends ChangeNotifier {
     required String lama,
     required String baru,
     required String konfirmasi,
-  }) =>
-      _service.gantiPassword(lama: lama, baru: baru, konfirmasi: konfirmasi);
+  }) => _service.gantiPassword(lama: lama, baru: baru, konfirmasi: konfirmasi);
 
   /// Dipanggil saat logout supaya data akun lama tidak tampil di akun berikutnya.
   /// Sengaja tanpa notifyListeners (dipanggil dari proses update provider).

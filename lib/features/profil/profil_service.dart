@@ -38,14 +38,13 @@ class ProfilService {
     });
   }
 
-  /// GET /profil/foto — kembalikan null bila belum ada foto / gagal diambil.
+  /// GET /profil/foto — kembalikan null bila server menyatakan foto tidak ada.
   Future<List<int>?> ambilFoto() async {
     try {
       return await _api.getBytes('/profil/foto', accept: 'image/*');
-    } on ApiException {
-      return null;
-    } on FormatException {
-      return null;
+    } on ApiException catch (error) {
+      if (error.statusCode == 404) return null;
+      rethrow;
     }
   }
 }

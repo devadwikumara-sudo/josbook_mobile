@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme.dart';
+import '../../../shared/widgets/state_views.dart';
 import '../home_warna.dart';
 
 /// Tampilan sementara saat data Home sedang dimuat.
@@ -73,34 +74,19 @@ class ErrorHome extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.cloud_off_rounded,
-                size: 40, color: HomeWarna.teksPudar),
-            const SizedBox(height: 12),
-            const Text(
-              'Data belum bisa dimuat',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: WarnaJosBook.teks,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              pesan,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: HomeWarna.teksPudar),
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: onUlang,
-              style:
-                  FilledButton.styleFrom(backgroundColor: WarnaJosBook.navy),
-              child: const Text('Coba lagi'),
-            ),
-          ],
+        child: ErrorStateView(
+          icon: Icons.cloud_off_rounded,
+          iconColor: HomeWarna.teksPudar,
+          title: 'Data belum bisa dimuat',
+          message: pesan,
+          onRetry: onUlang,
+          filledButton: true,
+          titleStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: WarnaJosBook.teks,
+          ),
+          messageStyle: const TextStyle(color: HomeWarna.teksPudar),
         ),
       ),
     );

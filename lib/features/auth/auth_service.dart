@@ -7,7 +7,8 @@ import '../../core/api_client.dart';
 /// Hanya aktif di mode debug DAN bila dijalankan dengan:
 ///   flutter run --dart-define=MOCK_AUTH=true
 /// Tanpa flag itu, aplikasi memanggil API Laravel yang sebenarnya.
-const bool _pakaiMock = kDebugMode && bool.fromEnvironment('MOCK_AUTH');
+const bool _pakaiMock =
+    kDebugMode && bool.fromEnvironment('MOCK_AUTH', defaultValue: false);
 
 const String _pesanBukanSiswa =
     'Aplikasi ini khusus untuk siswa. Silakan gunakan website JosBook.';
@@ -35,6 +36,7 @@ class AuthService {
     }
 
     await _api.tokenStorage.simpan(token);
+    _api.tandaiSesiAktif();
     return data;
   }
 

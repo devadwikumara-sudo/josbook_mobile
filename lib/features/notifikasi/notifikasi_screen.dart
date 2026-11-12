@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme.dart';
+import '../../shared/widgets/state_views.dart';
 import '../home/home_data.dart';
 import 'notifikasi_model.dart';
 import 'notifikasi_provider.dart';
@@ -144,14 +145,39 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
     }
 
     if (_provider.error != null && _provider.items.isEmpty) {
-      return _KeadaanGagal(
-        pesan: _provider.error!,
-        onUlang: () => unawaited(_muatDanTandaiBaca()),
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: ErrorStateView(
+            title: 'Notifikasi gagal dimuat.',
+            message: _provider.error!,
+            onRetry: () => unawaited(_muatDanTandaiBaca()),
+            icon: Icons.cloud_off_outlined,
+            iconSize: 42,
+            titleStyle: const TextStyle(color: WarnaJosBook.teks),
+            messageStyle: const TextStyle(color: WarnaJosBook.teks),
+            retryIcon: Icons.refresh_rounded,
+          ),
+        ),
       );
     }
 
     if (_provider.items.isEmpty) {
-      return const _KeadaanKosong();
+      return const Center(
+        child: EmptyStateView(
+          title: 'Belum ada notifikasi',
+          message: 'Notifikasi terbaru akan muncul di sini.',
+          icon: Icons.notifications_none_rounded,
+          iconSize: 48,
+          titleStyle: TextStyle(
+            color: WarnaJosBook.teks,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+          padding: EdgeInsets.all(28),
+          textStyle: TextStyle(color: Color(0xFF718096)),
+        ),
+      );
     }
 
     return RefreshIndicator(
@@ -267,82 +293,6 @@ class _KartuNotifikasi extends StatelessWidget {
               ],
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _KeadaanGagal extends StatelessWidget {
-  const _KeadaanGagal({required this.pesan, required this.onUlang});
-
-  final String pesan;
-  final VoidCallback onUlang;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.cloud_off_outlined,
-              color: WarnaJosBook.merah,
-              size: 42,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Notifikasi gagal dimuat.\n$pesan',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: WarnaJosBook.teks),
-            ),
-            const SizedBox(height: 8),
-            TextButton.icon(
-              onPressed: onUlang,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Coba lagi'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _KeadaanKosong extends StatelessWidget {
-  const _KeadaanKosong();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Padding(
-        padding: EdgeInsets.all(28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.notifications_none_rounded,
-              color: Color(0xFF718096),
-              size: 48,
-            ),
-            SizedBox(height: 12),
-            Text(
-              'Belum ada notifikasi',
-              style: TextStyle(
-                color: WarnaJosBook.teks,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              'Notifikasi terbaru akan muncul di sini.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFF718096)),
-            ),
-          ],
         ),
       ),
     );

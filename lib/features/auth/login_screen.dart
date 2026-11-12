@@ -31,7 +31,9 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     // Bersihkan sisa error dari layar lain (misalnya layar Daftar).
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.read<AuthProvider>().hapusError();
+      if (!mounted) return;
+      final auth = context.read<AuthProvider>();
+      if (!auth.sesiBerakhir) auth.hapusError();
     });
   }
 

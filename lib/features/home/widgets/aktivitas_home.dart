@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme.dart';
+import '../../../shared/widgets/state_views.dart';
 import '../home_data.dart';
 import '../home_warna.dart';
 
@@ -11,9 +12,9 @@ class AktivitasHome extends StatelessWidget {
     required this.items,
     required this.onItem,
     required this.onLihatSemua,
+    required this.onUlang,
     this.memuat = false,
     this.pesanError,
-    this.onUlang,
   });
 
   final List<ItemAktivitas> items;
@@ -21,7 +22,7 @@ class AktivitasHome extends StatelessWidget {
   final VoidCallback onLihatSemua;
   final bool memuat;
   final String? pesanError;
-  final VoidCallback? onUlang;
+  final VoidCallback onUlang;
 
   @override
   Widget build(BuildContext context) {
@@ -87,32 +88,16 @@ class AktivitasHome extends StatelessWidget {
                   ),
                 )
               : pesanError != null && items.isEmpty
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Aktivitas gagal dimuat.\n$pesanError',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: HomeWarna.teksPudar),
-                      ),
-                      if (onUlang != null)
-                        TextButton(
-                          onPressed: onUlang,
-                          child: const Text('Coba lagi'),
-                        ),
-                    ],
-                  ),
+              ? ErrorStateView(
+                  message: 'Aktivitas gagal dimuat.\n$pesanError',
+                  onRetry: onUlang,
+                  compact: true,
+                  messageStyle: const TextStyle(color: HomeWarna.teksPudar),
                 )
               : items.isEmpty
-              ? const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Center(
-                    child: Text(
-                      'Belum ada aktivitas.',
-                      style: TextStyle(color: HomeWarna.teksPudar),
-                    ),
-                  ),
+              ? const EmptyStateView(
+                  message: 'Belum ada aktivitas.',
+                  textStyle: TextStyle(color: HomeWarna.teksPudar),
                 )
               : Column(
                   children: [

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme.dart';
 import '../../shared/widgets/navbar.dart';
+import '../../shared/widgets/state_views.dart';
 import 'profil_provider.dart';
 import '../../shared/widgets/latar_profil.dart';
 
@@ -151,15 +152,14 @@ class _KotakGagalMuat extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: KartuProfil(
-        child: Column(
-          children: [
-            Text(
-              pesan,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: WarnaJosBook.merah, fontSize: 12),
-            ),
-            TextButton(onPressed: onUlang, child: const Text('Coba lagi')),
-          ],
+        child: ErrorStateView(
+          message: pesan,
+          onRetry: onUlang,
+          compact: true,
+          messageStyle: const TextStyle(
+            color: WarnaJosBook.merah,
+            fontSize: 12,
+          ),
         ),
       ),
     );

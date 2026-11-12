@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme.dart';
 import '../../shared/widgets/navbar.dart';
+import '../../shared/widgets/state_views.dart';
 import '../unduh/unduh_service.dart';
 import 'nilai_model.dart';
 import 'nilai_provider.dart';
@@ -325,19 +326,14 @@ class _ErrorNilai extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          'Nilai gagal dimuat.\n$pesan',
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: WarnaJosBook.merah),
-        ),
-        TextButton.icon(
-          onPressed: onUlang,
-          icon: const Icon(Icons.refresh, size: 18),
-          label: const Text('Coba lagi'),
-        ),
-      ],
+    return ErrorStateView(
+      title: 'Nilai gagal dimuat.',
+      message: pesan,
+      onRetry: onUlang,
+      compact: true,
+      retryIcon: Icons.refresh,
+      titleStyle: const TextStyle(color: WarnaJosBook.merah),
+      messageStyle: const TextStyle(color: WarnaJosBook.merah),
     );
   }
 }
@@ -364,15 +360,10 @@ class _KartuNilai extends StatelessWidget {
         ],
       ),
       child: mapel.isEmpty
-          ? const Padding(
+          ? const EmptyStateView(
+              message: 'Belum ada nilai untuk semester ini',
               padding: EdgeInsets.symmetric(vertical: 28),
-              child: Center(
-                child: Text(
-                  'Belum ada nilai untuk semester ini',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Color(0xFF718096)),
-                ),
-              ),
+              textStyle: TextStyle(color: Color(0xFF718096), fontSize: 14),
             )
           : Column(
               children: [
