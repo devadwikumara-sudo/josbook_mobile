@@ -17,8 +17,7 @@ class AuthService {
   final ApiClient _api = ApiClient.instance;
 
   /// Nama platform untuk layar "Sesi Aktif" (aman dipakai di Android, iOS, dan Chrome).
-  String get _namaPlatform =>
-      kIsWeb ? 'Web' : defaultTargetPlatform.name;
+  String get _namaPlatform => kIsWeb ? 'Web' : defaultTargetPlatform.name;
 
   /// POST /login — menyimpan token jika berhasil, lalu mengembalikan `data`.
   /// Akun yang perannya bukan siswa ditolak (sesi di server langsung dicabut).
@@ -39,8 +38,8 @@ class AuthService {
     return data;
   }
 
-  /// POST /register — mendaftarkan akun siswa baru.
-  Future<void> daftar({
+  /// POST /daftar — mendaftarkan akun siswa dan mengirim kode OTP email.
+  Future<Map<String, dynamic>> daftar({
     required String nama,
     required String nisn,
     required String email,
@@ -48,15 +47,64 @@ class AuthService {
   }) async {
     if (_pakaiMock) {
       await Future<void>.delayed(const Duration(milliseconds: 700));
-      return;
+      return {
+        'email': _samarkanEmail(email),
+        'berlaku_menit': 10,
+        'jeda_kirim_ulang_detik': 60,
+      };
     }
 
-    await _api.post('/register', data: {
-      'nama': nama,
-      'nisn': nisn,
-      'email': email,
-      'password': password,
-    });
+    final res = await _api.post(
+      '/daftar',
+      data: {'nama': nama, 'nisn': nisn, 'email': email, 'password': password},
+    );
+    return Map<String, dynamic>.from(res['data'] as Map);
+  }
+
+  /// POST /verifikasi-otp — mengaktifkan akun setelah kode email benar.
+  Future<Map<String, dynamic>> verifikasiOtp({
+    required String email,
+    required String tujuan,
+    required String kode,
+  }) async {
+    if (_pakaiMock) {
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      if (kode != '123456') {
+        throw ApiException(
+          'Kode verifikasi tidak valid atau sudah kedaluwarsa. Silakan kirim ulang kode.',
+          kode: 'otp_salah',
+          statusCode: 422,
+        );
+      }
+      return {'nama': 'Siswa Contoh', 'nisn': '0098202509'};
+    }
+
+    final res = await _api.post(
+      '/verifikasi-otp',
+      data: {'email': email, 'tujuan': tujuan, 'kode': kode},
+    );
+    return Map<String, dynamic>.from(res['data'] as Map);
+  }
+
+  /// POST /kirim-ulang-otp — meminta kode baru sesuai jeda server.
+  Future<Map<String, dynamic>> kirimUlangOtp({
+    required String email,
+    required String tujuan,
+  }) async {
+    if (_pakaiMock) {
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      return {
+        'email': _samarkanEmail(email),
+        'berlaku_menit': 10,
+        'jeda_kirim_ulang_detik': 60,
+      };
+    }
+
+    final res = await _api.post(
+      '/kirim-ulang-otp',
+      data: {'email': email, 'tujuan': tujuan},
+    );
+    return Map<String, dynamic>.from(res['data'] as Map);
   }
 
   /// GET /sesi — memeriksa token yang tersimpan masih berlaku.
@@ -92,12 +140,17 @@ class AuthService {
   }
 
   Future<Map<String, dynamic>> _loginServer(
-      String username, String password) async {
-    final res = await _api.post('/login', data: {
-      'username': username,
-      'password': password,
-      'nama_perangkat': 'Aplikasi JosBook ($_namaPlatform)',
-    });
+    String username,
+    String password,
+  ) async {
+    final res = await _api.post(
+      '/login',
+      data: {
+        'username': username,
+        'password': password,
+        'nama_perangkat': 'Aplikasi JosBook ($_namaPlatform)',
+      },
+    );
     return Map<String, dynamic>.from(res['data'] as Map);
   }
 
@@ -108,17 +161,29 @@ class AuthService {
     return peran == null || peran == 'siswa';
   }
 
+  String _samarkanEmail(String email) {
+    final int pemisah = email.indexOf('@');
+    if (pemisah <= 0) return email;
+    final String nama = email.substring(0, pemisah);
+    final String bagianNama = nama.length <= 2
+        ? nama
+        : '${nama.substring(0, 2)}****';
+    return '$bagianNama${email.substring(pemisah)}';
+  }
+
   // ---------------------------------------------------------------- MOCK ---
 
   Map<String, dynamic> _dataSiswaMock() => {
-        'token': 'token-mock',
-        'wajib_ganti_password': false,
-        'pengguna': {'nama': 'Indra Kusuma', 'peran': 'siswa'},
-      };
+    'token': 'token-mock',
+    'wajib_ganti_password': false,
+    'pengguna': {'nama': 'Indra Kusuma', 'peran': 'siswa'},
+  };
 
   /// Akun contoh: siswa 0098202509 / 12345678, guru guru1 / 12345678.
   Future<Map<String, dynamic>> _loginMock(
-      String username, String password) async {
+    String username,
+    String password,
+  ) async {
     await Future<void>.delayed(const Duration(milliseconds: 700));
 
     if (password != '12345678') {

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme.dart';
 import 'auth_provider.dart';
+import 'otp_screen.dart';
 import 'widgets/field_auth.dart';
 import 'widgets/kotak_error_auth.dart';
 import 'widgets/latar_auth.dart';
@@ -94,7 +95,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     setState(() => _errorLokal = null);
 
-    final bool berhasil = await auth.daftar(
+    final Map<String, dynamic>? data = await auth.daftar(
       nama: _nama.text.trim(),
       nisn: _nisn.text.trim(),
       email: _email.text.trim(),
@@ -103,14 +104,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (!mounted) return;
 
-    if (berhasil) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('Pendaftaran berhasil. Silakan login.')),
-        );
-      context.go('/login');
+    if (data != null) {
+      final Object? jeda = data['jeda_kirim_ulang_detik'];
+      context.go(
+        '/verifikasi-otp',
+        extra: OtpRouteData(
+          email: _email.text.trim(),
+          emailTersamar:
+              data['email']?.toString() ?? _samarkanEmail(_email.text.trim()),
+          tujuan: 'daftar',
+          jedaKirimUlangDetik: jeda is num ? jeda.toInt() : 60,
+        ),
+      );
     }
+  }
+
+  String _samarkanEmail(String email) {
+    final int pemisah = email.indexOf('@');
+    if (pemisah <= 0) return email;
+    final String nama = email.substring(0, pemisah);
+    return '${nama.length <= 2 ? nama : '${nama.substring(0, 2)}****'}'
+        '${email.substring(pemisah)}';
   }
 
   void _bersihkanError() {
@@ -197,8 +211,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 onPressed: auth.sedangMemproses ? null : _daftar,
                 style: FilledButton.styleFrom(
                   backgroundColor: WarnaJosBook.navy,
-                  disabledBackgroundColor:
-                      WarnaJosBook.navy.withValues(alpha: 0.8),
+                  disabledBackgroundColor: WarnaJosBook.navy.withValues(
+                    alpha: 0.8,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

@@ -5,6 +5,9 @@ import 'package:provider/provider.dart';
 import 'core/theme.dart';
 import 'features/auth/auth_provider.dart';
 import 'features/auth/login_screen.dart';
+import 'features/auth/otp_screen.dart';
+import 'features/auth/pendaftaran_sukses_screen.dart';
+import 'features/auth/register_screen.dart';
 import 'features/biodata/biodata_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/nilai/nilai_screen.dart';
@@ -54,7 +57,13 @@ class _JosBookAppState extends State<JosBookApp> {
           case AuthStatus.memeriksa:
             return lokasi == '/mulai' ? null : '/mulai';
           case AuthStatus.belumLogin:
-            return lokasi == '/login' ? null : '/login';
+            const rutePublik = {
+              '/login',
+              '/daftar',
+              '/verifikasi-otp',
+              '/daftar-berhasil',
+            };
+            return rutePublik.contains(lokasi) ? null : '/login';
           case AuthStatus.sudahLogin:
             // Aplikasi baru dibuka & token lama masih berlaku: konfirmasi dulu.
             if (auth.perluKonfirmasiSesi) {
@@ -64,7 +73,10 @@ class _JosBookAppState extends State<JosBookApp> {
             }
             if (lokasi == '/mulai' ||
                 lokasi == '/login' ||
-                lokasi == '/sesi-aktif') {
+                lokasi == '/sesi-aktif' ||
+                lokasi == '/daftar' ||
+                lokasi == '/verifikasi-otp' ||
+                lokasi == '/daftar-berhasil') {
               return '/home';
             }
             return null;
@@ -73,11 +85,25 @@ class _JosBookAppState extends State<JosBookApp> {
       routes: [
         GoRoute(
           path: '/mulai',
-          builder: (_, _) => SplashScreen(
-            onSelesai: () => _splashSelesai.value = true,
-          ),
+          builder: (_, _) =>
+              SplashScreen(onSelesai: () => _splashSelesai.value = true),
         ),
         GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+        GoRoute(path: '/daftar', builder: (_, _) => const RegisterScreen()),
+        GoRoute(
+          path: '/verifikasi-otp',
+          builder: (_, state) {
+            final Object? extra = state.extra;
+            if (extra is! OtpRouteData) {
+              return const OtpScreen(data: null);
+            }
+            return OtpScreen(data: extra);
+          },
+        ),
+        GoRoute(
+          path: '/daftar-berhasil',
+          builder: (_, _) => const PendaftaranSuksesScreen(),
+        ),
         GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
         GoRoute(path: '/biodata', builder: (_, _) => const BiodataScreen()),
         GoRoute(path: '/nilai', builder: (_, _) => const NilaiScreen()),

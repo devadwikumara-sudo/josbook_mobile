@@ -8,8 +8,9 @@ class ApiException implements Exception {
   final String pesan;
   final String? kode; // contoh: login_gagal, belum_verifikasi, register_gagal
   final int? statusCode;
+  final Map<String, dynamic>? data;
 
-  ApiException(this.pesan, {this.kode, this.statusCode});
+  ApiException(this.pesan, {this.kode, this.statusCode, this.data});
 
   @override
   String toString() => pesan;
@@ -112,9 +113,13 @@ class ApiClient {
     final isi = res.data;
     String pesan = 'Terjadi kesalahan (${res.statusCode}).';
     String? kode;
+    Map<String, dynamic>? data;
 
     if (isi is Map) {
       kode = isi['kode']?.toString();
+      if (isi['data'] is Map) {
+        data = Map<String, dynamic>.from(isi['data'] as Map);
+      }
 
       if (isi['pesan'] != null) {
         pesan = isi['pesan'].toString();
@@ -134,6 +139,11 @@ class ApiClient {
       onUnauthorized?.call();
     }
 
-    return ApiException(pesan, kode: kode, statusCode: res.statusCode);
+    return ApiException(
+      pesan,
+      kode: kode,
+      statusCode: res.statusCode,
+      data: data,
+    );
   }
 }

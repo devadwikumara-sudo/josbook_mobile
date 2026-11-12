@@ -16,6 +16,10 @@ class AuthProvider extends ChangeNotifier {
   AuthStatus status = AuthStatus.memeriksa;
   bool sedangMemproses = false;
   String? pesanError;
+  String? kodeError;
+  Map<String, dynamic>? dataError;
+  int? otpSisaDetik;
+  int? otpSisaPercobaan;
   bool wajibGantiPassword = false;
   String? namaPengguna;
 
@@ -58,6 +62,8 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> login(String username, String password) async {
     sedangMemproses = true;
     pesanError = null;
+    kodeError = null;
+    dataError = null;
     notifyListeners();
 
     try {
@@ -69,7 +75,7 @@ class AuthProvider extends ChangeNotifier {
       status = AuthStatus.sudahLogin;
       return true;
     } on ApiException catch (e) {
-      pesanError = e.pesan;
+      _simpanError(e);
       return false;
     } finally {
       sedangMemproses = false;
@@ -77,7 +83,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> daftar({
+  Future<Map<String, dynamic>?> daftar({
     required String nama,
     required String nisn,
     required String email,
@@ -85,24 +91,84 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     sedangMemproses = true;
     pesanError = null;
+    kodeError = null;
+    dataError = null;
     notifyListeners();
 
     try {
-      await _service.daftar(
+      return await _service.daftar(
         nama: nama,
         nisn: nisn,
         email: email,
         password: password,
       );
+    } on ApiException catch (e) {
+      _simpanError(e);
+      return null;
+    } finally {
+      sedangMemproses = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> verifikasiOtp({
+    required String email,
+    required String tujuan,
+    required String kode,
+  }) async {
+    sedangMemproses = true;
+    pesanError = null;
+    kodeError = null;
+    dataError = null;
+    otpSisaPercobaan = null;
+    notifyListeners();
+
+    try {
+      await _service.verifikasiOtp(email: email, tujuan: tujuan, kode: kode);
       return true;
     } on ApiException catch (e) {
-      pesanError = e.pesan;
+      _simpanError(e);
+      otpSisaPercobaan = _angka(e.data?['sisa_percobaan']);
       return false;
     } finally {
       sedangMemproses = false;
       notifyListeners();
     }
   }
+
+  Future<bool> kirimUlangOtp({
+    required String email,
+    required String tujuan,
+  }) async {
+    sedangMemproses = true;
+    pesanError = null;
+    kodeError = null;
+    dataError = null;
+    otpSisaDetik = null;
+    notifyListeners();
+
+    try {
+      final data = await _service.kirimUlangOtp(email: email, tujuan: tujuan);
+      otpSisaDetik = _angka(data['jeda_kirim_ulang_detik']) ?? 60;
+      return true;
+    } on ApiException catch (e) {
+      _simpanError(e);
+      otpSisaDetik = _angka(e.data?['sisa_detik']);
+      return false;
+    } finally {
+      sedangMemproses = false;
+      notifyListeners();
+    }
+  }
+
+  void _simpanError(ApiException error) {
+    pesanError = error.pesan;
+    kodeError = error.kode;
+    dataError = error.data;
+  }
+
+  int? _angka(Object? value) =>
+      value is num ? value.toInt() : int.tryParse(value?.toString() ?? '');
 
   Future<void> logout() async {
     await _service.logout();
@@ -148,8 +214,14 @@ class AuthProvider extends ChangeNotifier {
   }
 
   void hapusError() {
-    if (pesanError != null) {
+    if (pesanError != null ||
+        kodeError != null ||
+        dataError != null ||
+        otpSisaPercobaan != null) {
       pesanError = null;
+      kodeError = null;
+      dataError = null;
+      otpSisaPercobaan = null;
       notifyListeners();
     }
   }
