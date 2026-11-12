@@ -18,18 +18,28 @@ enum JenisUnduhan {
 }
 
 class UnduhService {
+  static const Set<JenisUnduhan> _tanpaPeriode = {JenisUnduhan.biodata};
+
   Future<void> unduh({
     required JenisUnduhan jenis,
-    required String tahunAjaran,
-    required String semester,
+    String? tahunAjaran,
+    String? semester,
   }) async {
+    final query = <String, dynamic>{};
+    if (!_tanpaPeriode.contains(jenis)) {
+      if (tahunAjaran == null || semester == null) {
+        throw ArgumentError(
+          'Tahun ajaran dan semester wajib untuk unduhan ${jenis.label}.',
+        );
+      }
+      query
+        ..['tahun_ajaran'] = tahunAjaran
+        ..['semester'] = semester.toLowerCase();
+    }
+
     final bytes = await ApiClient.instance.getBytes(
-      '/unduh',
-      query: {
-        'jenis': jenis.apiValue,
-        'tahun_ajaran': tahunAjaran,
-        'semester': semester.toLowerCase(),
-      },
+      '/unduh/${jenis.apiValue}',
+      query: query,
       accept: 'application/pdf',
     );
 
@@ -39,9 +49,7 @@ class UnduhService {
       );
     }
 
-    final namaFile =
-        'josbook-${jenis.apiValue}-${tahunAjaran.replaceAll('/', '-')}-'
-        '${semester.toLowerCase()}.pdf';
+    final namaFile = _namaFile(jenis, tahunAjaran, semester);
     await SharePlus.instance.share(
       ShareParams(
         files: [
@@ -55,5 +63,12 @@ class UnduhService {
         subject: 'Unduhan ${jenis.label} JosBook',
       ),
     );
+  }
+
+  String _namaFile(JenisUnduhan jenis, String? tahunAjaran, String? semester) {
+    final periode = tahunAjaran == null || semester == null
+        ? ''
+        : '-${tahunAjaran.replaceAll('/', '-')}-${semester.toLowerCase()}';
+    return 'josbook-${jenis.apiValue}$periode.pdf';
   }
 }

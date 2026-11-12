@@ -244,8 +244,8 @@ class _FakeUnduhService extends UnduhService {
   @override
   Future<void> unduh({
     required JenisUnduhan jenis,
-    required String tahunAjaran,
-    required String semester,
+    String? tahunAjaran,
+    String? semester,
   }) async {
     this.jenis = jenis;
     this.tahunAjaran = tahunAjaran;

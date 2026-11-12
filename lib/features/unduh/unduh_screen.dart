@@ -1,26 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/api_client.dart';
 import '../../core/theme.dart';
 import '../../shared/widgets/navbar.dart';
+import '../nilai/nilai_model.dart';
+import '../nilai/nilai_service.dart';
 import 'unduh_service.dart';
 
 class UnduhScreen extends StatefulWidget {
-  const UnduhScreen({super.key});
+  const UnduhScreen({super.key, this.service, this.periodeService});
+
+  final UnduhService? service;
+  final NilaiService? periodeService;
 
   @override
   State<UnduhScreen> createState() => _UnduhScreenState();
 }
 
 class _UnduhScreenState extends State<UnduhScreen> {
-  final UnduhService _service = UnduhService();
-  final List<String> _semester = ['Ganjil', 'Genap'];
+  late final UnduhService _service;
+  late final NilaiService _periodeService;
 
   JenisUnduhan _jenis = JenisUnduhan.biodata;
-  String? _tahunAjaran;
-  String _semesterTerpilih = 'Ganjil';
-  List<String> _daftarTahun = const [];
+  List<NilaiPeriode> _periode = const [];
+  NilaiPeriode? _periodeTerpilih;
   Object? _errorPeriode;
   bool _memuatPeriode = true;
   bool _sedangUnduh = false;
@@ -28,6 +31,8 @@ class _UnduhScreenState extends State<UnduhScreen> {
   @override
   void initState() {
     super.initState();
+    _service = widget.service ?? UnduhService();
+    _periodeService = widget.periodeService ?? HttpNilaiService();
     _muatPeriode();
   }
 
@@ -38,37 +43,23 @@ class _UnduhScreenState extends State<UnduhScreen> {
     });
 
     try {
-      final response = await ApiClient.instance.get('/home');
-      final data = response['data'];
-      if (data is! Map) {
-        throw const FormatException('Data periode dari server tidak valid.');
+      final hasil = await _periodeService.ambilPeriode();
+      final pilihanLama = _periodeTerpilih;
+      NilaiPeriode? pilihan;
+      if (pilihanLama != null) {
+        for (final item in hasil) {
+          if (item.tahunAjaran == pilihanLama.tahunAjaran &&
+              item.semester == pilihanLama.semester) {
+            pilihan = item;
+            break;
+          }
+        }
       }
-
-      final tahunAktif = data['tahun_ajaran']?.toString().trim() ?? '';
-      final tahunMulai = RegExp(r'^(\d{4})').firstMatch(tahunAktif);
-      if (tahunMulai == null) {
-        throw const FormatException(
-          'Tahun ajaran aktif tidak tersedia dari server.',
-        );
-      }
-
-      final awal = int.parse(tahunMulai.group(1)!);
-      final daftarTahun = [
-        tahunAktif,
-        for (var index = 1; index < 10; index++)
-          '${awal - index}/${awal - index + 1}',
-      ];
-      final semesterAktif = data['semester']?.toString().toLowerCase();
 
       if (!mounted) return;
       setState(() {
-        _tahunAjaran = daftarTahun.first;
-        _daftarTahun = daftarTahun;
-        if (semesterAktif != null &&
-            (semesterAktif == 'ganjil' || semesterAktif == 'genap')) {
-          _semesterTerpilih =
-              semesterAktif[0].toUpperCase() + semesterAktif.substring(1);
-        }
+        _periode = hasil;
+        _periodeTerpilih = pilihan ?? (hasil.isEmpty ? null : hasil.first);
         _memuatPeriode = false;
       });
     } catch (error) {
@@ -81,15 +72,15 @@ class _UnduhScreenState extends State<UnduhScreen> {
   }
 
   Future<void> _unduh() async {
-    final tahun = _tahunAjaran;
-    if (tahun == null || _sedangUnduh) return;
+    final periode = _periodeTerpilih;
+    if (_sedangUnduh || (_butuhPeriode && periode == null)) return;
 
     setState(() => _sedangUnduh = true);
     try {
       await _service.unduh(
         jenis: _jenis,
-        tahunAjaran: tahun,
-        semester: _semesterTerpilih,
+        tahunAjaran: _butuhPeriode ? periode?.tahunAjaran : null,
+        semester: _butuhPeriode ? periode?.semester : null,
       );
     } catch (error) {
       if (!mounted) return;
@@ -105,6 +96,8 @@ class _UnduhScreenState extends State<UnduhScreen> {
       if (mounted) setState(() => _sedangUnduh = false);
     }
   }
+
+  bool get _butuhPeriode => _jenis != JenisUnduhan.biodata;
 
   @override
   Widget build(BuildContext context) {
@@ -157,15 +150,28 @@ class _UnduhScreenState extends State<UnduhScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 64, 20, 24),
                   children: [
                     _pilihJenis(),
-                    const SizedBox(height: 10),
-                    _pilihTahun(),
-                    const SizedBox(height: 10),
-                    _pilihSemester(),
+                    if (_butuhPeriode) ...[
+                      const SizedBox(height: 10),
+                      if (_errorPeriode != null)
+                        _pesanErrorPeriode()
+                      else if (_periode.isEmpty && !_memuatPeriode)
+                        _pesanKosongPeriode()
+                      else ...[
+                        _pilihTahun(),
+                        const SizedBox(height: 10),
+                        _pilihSemester(),
+                      ],
+                    ],
                     const SizedBox(height: 10),
                     SizedBox(
                       height: 50,
                       child: FilledButton.icon(
-                        onPressed: _memuatPeriode || _sedangUnduh
+                        onPressed:
+                            _sedangUnduh ||
+                                (_butuhPeriode &&
+                                    (_memuatPeriode ||
+                                        _errorPeriode != null ||
+                                        _periodeTerpilih == null))
                             ? null
                             : _unduh,
                         style: FilledButton.styleFrom(
@@ -194,18 +200,15 @@ class _UnduhScreenState extends State<UnduhScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    if (_errorPeriode != null)
-                      _pesanErrorPeriode()
-                    else
-                      const Text(
-                        'Hanya tahun ajaran dan semester yang sudah dijalani '
-                        'yang bisa dibuka. Data tidak dapat diubah dari app.',
-                        style: TextStyle(
-                          color: Color(0xFF758396),
-                          fontSize: 12,
-                          height: 1.35,
-                        ),
+                    const Text(
+                      'Hanya tahun ajaran dan semester yang sudah dijalani '
+                      'yang bisa dibuka. Data tidak dapat diubah dari app.',
+                      style: TextStyle(
+                        color: Color(0xFF758396),
+                        fontSize: 12,
+                        height: 1.35,
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -240,6 +243,10 @@ class _UnduhScreenState extends State<UnduhScreen> {
   }
 
   Widget _pilihTahun() {
+    final daftarTahun = _periode
+        .map((item) => item.tahunAjaran)
+        .toSet()
+        .toList(growable: false);
     return Container(
       height: 42,
       padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -258,24 +265,34 @@ class _UnduhScreenState extends State<UnduhScreen> {
             )
           : DropdownButtonHideUnderline(
               child: DropdownButton<String>(
-                value: _tahunAjaran,
+                value: _periodeTerpilih?.tahunAjaran,
                 isExpanded: true,
                 icon: const Icon(Icons.keyboard_arrow_down),
                 items: [
-                  for (final tahun in _daftarTahun)
+                  for (final tahun in daftarTahun)
                     DropdownMenuItem(value: tahun, child: Text(tahun)),
                 ],
-                onChanged: _daftarTahun.isEmpty
+                onChanged: daftarTahun.isEmpty
                     ? null
                     : (tahun) {
-                        if (tahun != null) setState(() => _tahunAjaran = tahun);
+                        if (tahun != null) _setTahunAjaran(tahun);
                       },
               ),
             ),
     );
   }
 
+  void _setTahunAjaran(String tahunAjaran) {
+    final pilihan = _periode.firstWhere(
+      (item) => item.tahunAjaran == tahunAjaran,
+    );
+    setState(() => _periodeTerpilih = pilihan);
+  }
+
   Widget _pilihSemester() {
+    final periodeTahunIni = _periode
+        .where((item) => item.tahunAjaran == _periodeTerpilih?.tahunAjaran)
+        .toList(growable: false);
     return Container(
       height: 34,
       padding: const EdgeInsets.all(3),
@@ -285,12 +302,12 @@ class _UnduhScreenState extends State<UnduhScreen> {
       ),
       child: Row(
         children: [
-          for (final semester in _semester)
+          for (final periode in periodeTahunIni)
             Expanded(
               child: _TombolPilihan(
-                label: semester,
-                terpilih: _semesterTerpilih == semester,
-                onTap: () => setState(() => _semesterTerpilih = semester),
+                label: periode.semester,
+                terpilih: _periodeTerpilih?.semester == periode.semester,
+                onTap: () => setState(() => _periodeTerpilih = periode),
               ),
             ),
         ],
@@ -303,7 +320,7 @@ class _UnduhScreenState extends State<UnduhScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Periode unduhan gagal dimuat.\n$_errorPeriode',
+          'Periode unduhan gagal dimuat.\n${_errorPeriode.toString()}',
           style: const TextStyle(
             color: WarnaJosBook.merah,
             fontSize: 12,
@@ -316,6 +333,16 @@ class _UnduhScreenState extends State<UnduhScreen> {
           label: const Text('Coba lagi'),
         ),
       ],
+    );
+  }
+
+  Widget _pesanKosongPeriode() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 12),
+      child: Text(
+        'Belum ada periode yang bisa diunduh.',
+        style: TextStyle(color: Color(0xFF758396), fontSize: 12),
+      ),
     );
   }
 }
