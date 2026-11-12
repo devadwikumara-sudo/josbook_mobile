@@ -1,91 +1,74 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme.dart';
 import '../../shared/widgets/navbar.dart';
-
-/// Satu baris nilai mata pelajaran.
-class NilaiMapel {
-  const NilaiMapel(this.mapel, this.nilai);
-
-  final String mapel;
-  final int nilai;
-}
+import '../unduh/unduh_service.dart';
+import 'nilai_model.dart';
+import 'nilai_provider.dart';
+import 'nilai_service.dart';
 
 class NilaiScreen extends StatefulWidget {
-  const NilaiScreen({super.key});
+  const NilaiScreen({super.key, this.service, this.unduhService});
+
+  final NilaiService? service;
+  final UnduhService? unduhService;
 
   @override
   State<NilaiScreen> createState() => _NilaiScreenState();
 }
 
 class _NilaiScreenState extends State<NilaiScreen> {
-  static const List<String> _daftarTahun = [
-    '2022/2023',
-    '2023/2024',
-    '2024/2025',
-    '2025/2026',
-  ];
+  late final NilaiProvider _provider;
+  late final UnduhService _unduhService;
+  bool _sedangUnduh = false;
 
-  // Urutan mapel (sama untuk semua tahun dan semester).
-  static const List<String> _daftarMapel = [
-    'Pendidikan Agama dan Budi Pekerti',
-    'Pendidikan Pancasila',
-    'Bahasa Indonesia',
-    'Matematika',
-    'Ilmu Pengetahuan Alam (IPA)',
-    'Ilmu Pengetahuan Sosial (IPS)',
-    'Bahasa Inggris',
-    'Pendidikan Jasmani Olahraga dan Kesehatan',
-    'Seni Budaya dan Prakarya/Seni dan Budaya',
-    'Informatika',
-    'Bahasa Jawa',
-  ];
-
-  // TODO: ganti dengan data dari API Laravel kalau endpoint nilai sudah ada,
-  // misalnya ApiClient.instance.get('/nilai?tahun=$_tahun&semester=...').
-  // Sementara ini data contoh. Kunci: 'tahun|semester' (1 = Ganjil, 2 = Genap).
-  // Urutan angka mengikuti urutan _daftarMapel di atas.
-  static const Map<String, List<int>> _dataNilai = {
-    '2025/2026|1': [92, 82, 87, 92, 82, 87, 92, 82, 87, 92, 82],
-    '2025/2026|2': [90, 85, 88, 89, 84, 86, 91, 83, 88, 90, 85],
-    '2024/2025|1': [88, 80, 85, 86, 81, 84, 89, 80, 85, 88, 82],
-    '2024/2025|2': [89, 82, 86, 87, 83, 85, 90, 81, 86, 89, 83],
-    '2023/2024|1': [85, 78, 83, 84, 79, 82, 86, 78, 83, 85, 80],
-    '2023/2024|2': [86, 80, 84, 85, 80, 83, 87, 79, 84, 86, 81],
-    '2022/2023|1': [82, 76, 80, 81, 77, 79, 83, 76, 80, 82, 78],
-    '2022/2023|2': [83, 77, 81, 82, 78, 80, 84, 77, 81, 83, 79],
-  };
-
-  String _tahun = _daftarTahun.last;
-  bool _ganjil = true;
-
-  List<NilaiMapel> _ambilNilai() {
-    final angka = _dataNilai['$_tahun|${_ganjil ? 1 : 2}'];
-    if (angka == null) return const [];
-    return [
-      for (var i = 0; i < _daftarMapel.length; i++)
-        NilaiMapel(_daftarMapel[i], angka[i]),
-    ];
-  }
-
-  String _rataRata(List<NilaiMapel> data) {
-    if (data.isEmpty) return '-';
-    final total = data.fold<int>(0, (jumlah, e) => jumlah + e.nilai);
-    return (total / data.length).toStringAsFixed(2).replaceAll('.', ',');
-  }
-
-  void _unduh() {
-    // TODO: sambungkan ke endpoint unduh nilai kalau backend sudah siap.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Fitur unduh belum tersedia.')),
+  @override
+  void initState() {
+    super.initState();
+    _provider = NilaiProvider(
+      service: widget.service ?? const MockNilaiService(),
     );
+    _unduhService = widget.unduhService ?? UnduhService();
+    unawaited(_provider.muatPeriode());
+  }
+
+  @override
+  void dispose() {
+    _provider.dispose();
+    super.dispose();
+  }
+
+  Future<void> _unduh() async {
+    final periode = _provider.periodeTerpilih;
+    if (periode == null || _sedangUnduh) return;
+
+    setState(() => _sedangUnduh = true);
+    try {
+      await _unduhService.unduh(
+        jenis: JenisUnduhan.nilai,
+        tahunAjaran: periode.tahunAjaran,
+        semester: periode.semester,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text('Unduhan gagal: $error'),
+            backgroundColor: WarnaJosBook.merah,
+          ),
+        );
+    } finally {
+      if (mounted) setState(() => _sedangUnduh = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final data = _ambilNilai();
-
     return Scaffold(
       bottomNavigationBar: const NavbarJosBook(aktif: TabNav.nilai),
       body: Container(
@@ -131,30 +114,70 @@ class _NilaiScreenState extends State<NilaiScreen> {
                 ),
               ),
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                  children: [
-                    _PilihTahun(
-                      nilai: _tahun,
-                      daftar: _daftarTahun,
-                      onChanged: (v) => setState(() => _tahun = v),
-                    ),
-                    const SizedBox(height: 10),
-                    _PilihSemester(
-                      ganjil: _ganjil,
-                      onChanged: (v) => setState(() => _ganjil = v),
-                    ),
-                    const SizedBox(height: 14),
-                    _KartuNilai(data: data, rataRata: _rataRata(data)),
-                    const SizedBox(height: 22),
-                    _TombolUnduh(onTap: _unduh),
-                  ],
+                child: AnimatedBuilder(
+                  animation: _provider,
+                  builder: (context, _) => _isi(),
                 ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _isi() {
+    final provider = _provider;
+    final periode = provider.periodeTerpilih;
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+      children: [
+        if (provider.memuatPeriode)
+          const _MemuatNilai()
+        else if (provider.errorPeriode != null)
+          _ErrorNilai(
+            pesan: provider.errorPeriode!,
+            onUlang: () => unawaited(provider.muatPeriode()),
+          )
+        else if (periode == null)
+          const _KartuNilai(data: null)
+        else ...[
+          _PilihTahun(
+            nilai: periode.tahunAjaran,
+            daftar: provider.periode
+                .map((item) => item.tahunAjaran)
+                .toSet()
+                .toList(),
+            onChanged: (tahun) => unawaited(provider.pilihTahun(tahun)),
+          ),
+          const SizedBox(height: 10),
+          _PilihSemester(
+            periode: provider.periode
+                .where((item) => item.tahunAjaran == periode.tahunAjaran)
+                .toList(),
+            terpilih: periode.semester,
+            onChanged: (semester) =>
+                unawaited(provider.pilihSemester(semester)),
+          ),
+          const SizedBox(height: 14),
+          if (provider.memuatNilai)
+            const _MemuatNilai()
+          else if (provider.errorNilai != null)
+            _ErrorNilai(
+              pesan: provider.errorNilai!,
+              onUlang: () => unawaited(provider.muatNilai()),
+            )
+          else
+            _KartuNilai(data: provider.data),
+        ],
+        const SizedBox(height: 22),
+        _TombolUnduh(
+          sedangUnduh: _sedangUnduh,
+          aktif: periode != null && !provider.memuatPeriode,
+          onTap: _unduh,
+        ),
+      ],
     );
   }
 }
@@ -190,10 +213,11 @@ class _PilihTahun extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
           items: [
-            for (final t in daftar) DropdownMenuItem(value: t, child: Text(t)),
+            for (final tahun in daftar)
+              DropdownMenuItem(value: tahun, child: Text(tahun)),
           ],
-          onChanged: (v) {
-            if (v != null) onChanged(v);
+          onChanged: (tahun) {
+            if (tahun != null) onChanged(tahun);
           },
         ),
       ),
@@ -202,10 +226,15 @@ class _PilihTahun extends StatelessWidget {
 }
 
 class _PilihSemester extends StatelessWidget {
-  const _PilihSemester({required this.ganjil, required this.onChanged});
+  const _PilihSemester({
+    required this.periode,
+    required this.terpilih,
+    required this.onChanged,
+  });
 
-  final bool ganjil;
-  final ValueChanged<bool> onChanged;
+  final List<NilaiPeriode> periode;
+  final String terpilih;
+  final ValueChanged<String> onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -217,20 +246,14 @@ class _PilihSemester extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(
-            child: _ItemSemester(
-              label: 'Ganjil',
-              aktif: ganjil,
-              onTap: () => onChanged(true),
+          for (final item in periode)
+            Expanded(
+              child: _ItemSemester(
+                label: item.semester,
+                aktif: terpilih == item.semester,
+                onTap: () => onChanged(item.semester),
+              ),
             ),
-          ),
-          Expanded(
-            child: _ItemSemester(
-              label: 'Genap',
-              aktif: !ganjil,
-              onTap: () => onChanged(false),
-            ),
-          ),
         ],
       ),
     );
@@ -274,14 +297,59 @@ class _ItemSemester extends StatelessWidget {
   }
 }
 
-class _KartuNilai extends StatelessWidget {
-  const _KartuNilai({required this.data, required this.rataRata});
-
-  final List<NilaiMapel> data;
-  final String rataRata;
+class _MemuatNilai extends StatelessWidget {
+  const _MemuatNilai();
 
   @override
   Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 36),
+      child: Center(
+        child: Column(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 12),
+            Text('Memuat nilai...'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ErrorNilai extends StatelessWidget {
+  const _ErrorNilai({required this.pesan, required this.onUlang});
+
+  final String pesan;
+  final VoidCallback onUlang;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          'Nilai gagal dimuat.\n$pesan',
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: WarnaJosBook.merah),
+        ),
+        TextButton.icon(
+          onPressed: onUlang,
+          icon: const Icon(Icons.refresh, size: 18),
+          label: const Text('Coba lagi'),
+        ),
+      ],
+    );
+  }
+}
+
+class _KartuNilai extends StatelessWidget {
+  const _KartuNilai({required this.data});
+
+  final NilaiData? data;
+
+  @override
+  Widget build(BuildContext context) {
+    final mapel = data?.mapel ?? const <NilaiMapel>[];
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -295,25 +363,36 @@ class _KartuNilai extends StatelessWidget {
           ),
         ],
       ),
-      child: data.isEmpty
+      child: mapel.isEmpty
           ? const Padding(
               padding: EdgeInsets.symmetric(vertical: 28),
               child: Center(
                 child: Text(
-                  'Belum ada nilai untuk semester ini.',
+                  'Belum ada nilai untuk semester ini',
+                  textAlign: TextAlign.center,
                   style: TextStyle(color: Color(0xFF718096)),
                 ),
               ),
             )
           : Column(
               children: [
-                for (final e in data)
-                  _BarisNilai(label: e.mapel, nilai: '${e.nilai}'),
-                _BarisNilai(label: 'Rata-rata', nilai: rataRata, garis: false),
+                for (final item in mapel)
+                  _BarisNilai(
+                    label: item.nama,
+                    nilai: _formatNilai(item.nilai),
+                  ),
+                _BarisNilai(
+                  label: 'Rata-rata',
+                  nilai: _formatNilai(data!.rataRata),
+                  garis: false,
+                ),
               ],
             ),
     );
   }
+
+  String _formatNilai(num? nilai) =>
+      nilai?.toString().replaceAll('.', ',') ?? '-';
 }
 
 class _BarisNilai extends StatelessWidget {
@@ -369,10 +448,10 @@ class _GarisPutus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-      builder: (context, c) {
+      builder: (context, constraints) {
         const lebar = 4.0;
         const jarak = 3.0;
-        final jumlah = (c.maxWidth / (lebar + jarak)).floor();
+        final jumlah = (constraints.maxWidth / (lebar + jarak)).floor();
         return Row(
           children: List.generate(
             jumlah,
@@ -392,26 +471,46 @@ class _GarisPutus extends StatelessWidget {
 }
 
 class _TombolUnduh extends StatelessWidget {
-  const _TombolUnduh({required this.onTap});
+  const _TombolUnduh({
+    required this.sedangUnduh,
+    required this.aktif,
+    required this.onTap,
+  });
 
+  final bool sedangUnduh;
+  final bool aktif;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0xFF12365F),
+      color: aktif ? const Color(0xFF12365F) : const Color(0xFF7F8B99),
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
-        onTap: onTap,
+        onTap: aktif && !sedangUnduh ? onTap : null,
         borderRadius: BorderRadius.circular(10),
-        child: const SizedBox(
+        child: SizedBox(
           height: 56,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.download_rounded, color: Colors.white, size: 18),
-              SizedBox(width: 8),
-              Text(
+              if (sedangUnduh)
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              else
+                const Icon(
+                  Icons.download_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              const SizedBox(width: 8),
+              const Text(
                 'Unduh nilai semester ini',
                 style: TextStyle(
                   color: Colors.white,
