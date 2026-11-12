@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 
 import 'core/theme.dart';
 import 'features/auth/auth_provider.dart';
+import 'features/auth/forgot_password_screen.dart';
 import 'features/auth/login_screen.dart';
+import 'features/auth/lupa_password_sukses_screen.dart';
 import 'features/auth/otp_screen.dart';
 import 'features/auth/pendaftaran_sukses_screen.dart';
 import 'features/auth/register_screen.dart';
@@ -60,8 +62,10 @@ class _JosBookAppState extends State<JosBookApp> {
             const rutePublik = {
               '/login',
               '/daftar',
+              '/lupa-password',
               '/verifikasi-otp',
               '/daftar-berhasil',
+              '/lupa-password-sukses',
             };
             return rutePublik.contains(lokasi) ? null : '/login';
           case AuthStatus.sudahLogin:
@@ -75,8 +79,10 @@ class _JosBookAppState extends State<JosBookApp> {
                 lokasi == '/login' ||
                 lokasi == '/sesi-aktif' ||
                 lokasi == '/daftar' ||
+                lokasi == '/lupa-password' ||
                 lokasi == '/verifikasi-otp' ||
-                lokasi == '/daftar-berhasil') {
+                lokasi == '/daftar-berhasil' ||
+                lokasi == '/lupa-password-sukses') {
               return '/home';
             }
             return null;
@@ -91,6 +97,10 @@ class _JosBookAppState extends State<JosBookApp> {
         GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
         GoRoute(path: '/daftar', builder: (_, _) => const RegisterScreen()),
         GoRoute(
+          path: '/lupa-password',
+          builder: (_, _) => const ForgotPasswordScreen(),
+        ),
+        GoRoute(
           path: '/verifikasi-otp',
           builder: (_, state) {
             final Object? extra = state.extra;
@@ -103,6 +113,10 @@ class _JosBookAppState extends State<JosBookApp> {
         GoRoute(
           path: '/daftar-berhasil',
           builder: (_, _) => const PendaftaranSuksesScreen(),
+        ),
+        GoRoute(
+          path: '/lupa-password-sukses',
+          builder: (_, _) => const LupaPasswordSuksesScreen(),
         ),
         GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
         GoRoute(path: '/biodata', builder: (_, _) => const BiodataScreen()),

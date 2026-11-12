@@ -61,6 +61,21 @@ class AuthService {
     return Map<String, dynamic>.from(res['data'] as Map);
   }
 
+  /// POST /lupa-password — mulai proses reset password dengan email.
+  Future<Map<String, dynamic>> lupaPassword({required String email}) async {
+    if (_pakaiMock) {
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      return {
+        'email': _samarkanEmail(email),
+        'berlaku_menit': 10,
+        'jeda_kirim_ulang_detik': 60,
+      };
+    }
+
+    final res = await _api.post('/lupa-password', data: {'email': email});
+    return Map<String, dynamic>.from(res['data'] as Map);
+  }
+
   /// POST /verifikasi-otp — mengaktifkan akun setelah kode email benar.
   Future<Map<String, dynamic>> verifikasiOtp({
     required String email,
@@ -76,12 +91,33 @@ class AuthService {
           statusCode: 422,
         );
       }
+      if (tujuan == 'lupa_password') {
+        return {'reset_token': 'reset-token-mock'};
+      }
       return {'nama': 'Siswa Contoh', 'nisn': '0098202509'};
     }
 
     final res = await _api.post(
       '/verifikasi-otp',
       data: {'email': email, 'tujuan': tujuan, 'kode': kode},
+    );
+    return Map<String, dynamic>.from(res['data'] as Map);
+  }
+
+  /// POST /reset-password — menyimpan password baru setelah token valid.
+  Future<Map<String, dynamic>> resetPassword({
+    required String email,
+    required String resetToken,
+    required String password,
+  }) async {
+    if (_pakaiMock) {
+      await Future<void>.delayed(const Duration(milliseconds: 600));
+      return {'status': 'berhasil'};
+    }
+
+    final res = await _api.post(
+      '/reset-password',
+      data: {'email': email, 'reset_token': resetToken, 'password': password},
     );
     return Map<String, dynamic>.from(res['data'] as Map);
   }

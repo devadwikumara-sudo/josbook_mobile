@@ -142,8 +142,10 @@ class _LoginScreenState extends State<LoginScreen> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () => _tampilkanInfo(
-                    'Halaman Lupa password akan dibuat pada tahap berikutnya.'),
+                onPressed: () {
+                  context.read<AuthProvider>().batalkanLupaPassword();
+                  context.go('/lupa-password');
+                },
                 child: const Text(
                   'Lupa password?',
                   style: TextStyle(
@@ -164,8 +166,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: auth.sedangMemproses ? null : _masuk,
                 style: FilledButton.styleFrom(
                   backgroundColor: WarnaJosBook.navy,
-                  disabledBackgroundColor:
-                      WarnaJosBook.navy.withValues(alpha: 0.8),
+                  disabledBackgroundColor: WarnaJosBook.navy.withValues(
+                    alpha: 0.8,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

@@ -64,7 +64,14 @@ class _OtpScreenState extends State<OtpScreen> {
       kode: _kode,
     );
 
-    if (mounted && berhasil) context.go('/daftar-berhasil');
+    if (!mounted || !berhasil) return;
+
+    if (data.tujuan == 'lupa_password') {
+      context.go('/lupa-password-sukses');
+      return;
+    }
+
+    context.go('/daftar-berhasil');
   }
 
   Future<void> _kirimUlang() async {
@@ -226,7 +233,14 @@ class _OtpScreenState extends State<OtpScreen> {
               OutlinedButton(
                 onPressed: auth.sedangMemproses
                     ? null
-                    : () => context.go('/daftar'),
+                    : () {
+                        if (data.tujuan == 'lupa_password') {
+                          context.read<AuthProvider>().batalkanLupaPassword();
+                          context.go('/login');
+                          return;
+                        }
+                        context.go('/daftar');
+                      },
                 child: const Text('Kembali'),
               ),
               const SizedBox(height: 8),
