@@ -4,10 +4,10 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme.dart';
 import 'auth_provider.dart';
-import 'widgets/kirim_ulang_otp.dart';
-import 'widgets/kotak_error_auth.dart';
-import 'widgets/kotak_otp.dart';
-import 'widgets/latar_auth.dart';
+import '../home/widgets/kirim_ulang_otp.dart';
+import '../home/widgets/kotak_error_auth.dart';
+import '../home/widgets/kotak_otp.dart';
+import '../home/widgets/latar_auth.dart';
 
 class OtpRouteData {
   const OtpRouteData({

@@ -5,10 +5,10 @@ import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import 'auth_provider.dart';
 import 'otp_screen.dart';
-import 'widgets/field_auth.dart';
-import 'widgets/kotak_error_auth.dart';
-import 'widgets/latar_auth.dart';
-import 'widgets/tab_auth.dart';
+import '../home/widgets/field_auth.dart';
+import '../home/widgets/kotak_error_auth.dart';
+import '../home/widgets/latar_auth.dart';
+import '../home/widgets/tab_auth.dart';
 
 /// Layar Daftar.
 class RegisterScreen extends StatefulWidget {

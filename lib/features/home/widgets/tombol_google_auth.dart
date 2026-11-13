@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme.dart';
-import '../auth_warna.dart';
+import '../../auth/auth_warna.dart';
 
 /// Tombol "Masuk dengan Google". Backend belum mendukung, jadi tampil sesuai
 /// desain tetapi berstatus "segera hadir" (hanya menampilkan info saat disentuh).

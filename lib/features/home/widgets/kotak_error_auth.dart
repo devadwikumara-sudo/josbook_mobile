@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme.dart';
-import '../auth_warna.dart';
+import '../../auth/auth_warna.dart';
 
 /// Kotak error merah muda di atas form (desain: "Login gagal").
 class KotakErrorAuth extends StatelessWidget {

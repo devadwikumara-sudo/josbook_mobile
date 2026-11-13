@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme.dart';
-import 'widgets/latar_auth.dart';
+import '../home/widgets/latar_auth.dart';
 
 class PendaftaranSuksesScreen extends StatelessWidget {
   const PendaftaranSuksesScreen({super.key});

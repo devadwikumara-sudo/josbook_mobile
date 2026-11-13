@@ -4,11 +4,11 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme.dart';
 import 'auth_provider.dart';
-import 'widgets/field_auth.dart';
-import 'widgets/kotak_error_auth.dart';
-import 'widgets/latar_auth.dart';
-import 'widgets/tab_auth.dart';
-import 'widgets/tombol_google_auth.dart';
+import '../home/widgets/field_auth.dart';
+import '../home/widgets/kotak_error_auth.dart';
+import '../home/widgets/latar_auth.dart';
+import '../home/widgets/tab_auth.dart';
+import '../home/widgets/tombol_google_auth.dart';
 
 /// Layar Login (desain: login 1 - login 4).
 class LoginScreen extends StatefulWidget {

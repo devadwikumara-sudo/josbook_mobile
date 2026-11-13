@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme.dart';
-import '../auth_warna.dart';
+import '../../auth/auth_warna.dart';
 
 /// Latar gradasi biru + area aman + isi yang bisa di-scroll.
 /// Dipakai bersama oleh semua layar autentikasi.
