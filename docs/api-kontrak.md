@@ -1,106 +1,46 @@
-# API Kontrak
+# Kontrak API Mobile JosBook
 
-Catatan: backend belum ada. Bagian Nilai adalah usulan kontrak, dipakai frontend dengan data mock sampai backend siap.
+Mobile memakai API Laravel pada prefix `/api/v1`; API dan website menggunakan database `josbook` yang sama. Semua respons dan request memakai JSON kecuali unduhan dokumen PDF.
 
-## Auth
+## Konfigurasi koneksi
 
-### 1) POST /lupa-password
-Memulai proses reset password.
+- Emulator Android debug bawaan: `http://10.0.2.2:8000/api/v1`; Flutter Web pada Laragon: `http://joslearn_project.test/api/v1`; simulator iOS debug: `http://127.0.0.1:8000/api/v1`.
+- Untuk alamat lain, jalankan aplikasi dengan `--dart-define=API_BASE_URL=<URL_API>`.
+- Perangkat fisik harus memakai alamat LAN komputer backend; jangan gunakan alamat emulator `10.0.2.2`.
+- CORS backend mengizinkan origin `localhost` hanya saat `APP_ENV=local`; origin produksi harus ditetapkan eksplisit melalui `CORS_ALLOWED_ORIGINS`.
+- Build rilis wajib menggunakan URL HTTPS. Jangan menyimpan kredensial database di aplikasi.
 
-Request body:
-```json
-{
-  "email": "siswa@example.com"
-}
-```
+## Autentikasi
 
-Respons sukses:
-```json
-{
-  "email": "s***@example.com",
-  "berlaku_menit": 10,
-  "jeda_kirim_ulang_detik": 60
-}
-```
+Endpoint publik: `POST /login`, `/daftar`, `/lupa-password`, dan `/reset-password`. Pendaftaran mengaktifkan akun setelah nama dan NISN cocok dengan data siswa. Pemulihan sandi mengirim tautan sekali pakai melalui email; kata sandi baru diatur pada halaman backend setelah tautan dibuka. Respons sukses membungkus payload dalam `data`; login mengembalikan token Sanctum. Request terlindungi mengirim `Authorization: Bearer <token>`.
 
-### 2) POST /verifikasi-otp
-Verifikasi kode OTP untuk tujuan tertentu.
+Tautan reset berlaku selama 15 menit dan hanya dapat dipakai sekali. OTP website tetap digunakan pada alur autentikasi website.
 
-Request body:
-```json
-{
-  "email": "siswa@example.com",
-  "tujuan": "lupa_password",
-  "kode": "123456"
-}
-```
+## Data siswa (wajib login)
 
-Respons sukses untuk lupa password:
-```json
-{
-  "reset_token": "abc123xyz"
-}
-```
+| Method | Path | Kegunaan |
+|---|---|---|
+| GET | `/home` | Ringkasan siswa dan aktivitas terbaru |
+| GET | `/biodata` | Biodata siswa |
+| GET | `/nilai` | Periode dan nilai siswa |
+| GET | `/profil` | Data profil |
+| PUT | `/profil` | Ubah email, nomor HP, dan alamat |
+| PUT | `/ganti-password` | Ganti password |
+| GET | `/notifikasi` | Daftar notifikasi |
+| POST | `/notifikasi/baca` | Tandai semua notifikasi sebagai dibaca |
+| POST | `/notifikasi/{id}/baca` | Tandai notifikasi milik pengguna sebagai dibaca |
+| GET | `/sesi` | Daftar sesi login |
+| DELETE | `/sesi` atau `/sesi/{id}` | Cabut satu atau semua sesi |
+| POST | `/logout` | Cabut sesi saat ini |
 
-### 3) POST /reset-password
-Mengganti password setelah OTP valid.
+### Nilai
 
-Request body:
-```json
-{
-  "email": "siswa@example.com",
-  "reset_token": "abc123xyz",
-  "password": "newPassword123"
-}
-```
+`GET /nilai` tanpa query mengembalikan periode yang tersedia dan periode terpilih. Setiap periode berisi `tahun_ajaran_id`, `tahun_ajaran`, dan daftar semester beserta status `terbuka`. Untuk mengambil data periode, gunakan `GET /nilai?ta=<tahun_ajaran_id>&semester=Ganjil|Genap`. Respons nilai berisi `terpilih`, `nilai` (nama mata pelajaran berada di field `mapel`), dan `rata_rata`. Aplikasi tidak menghitung ulang rata-rata.
 
-Respons sukses:
-```json
-{
-  "status": "berhasil"
-}
-```
+### Unduhan
 
-Catatan aplikasi: password baru tidak disimpan ke disk atau log; hanya dipertahankan sementara di memory provider sampai proses selesai.
+`GET /unduh/{jenis}` mengembalikan PDF: `bio`, `nilai`, `hadir`, `ekskul`, atau `all`. Jenis selain `bio` membutuhkan query `ta=<tahun_ajaran_id>&semester=Ganjil|Genap`.
 
-## Nilai
+## Bentuk error
 
-### 4) GET /nilai/periode
-Daftar semester yang sudah dijalani siswa, urut terbaru dulu. Semester yang belum berjalan tidak ikut.
-Tanpa parameter.
-
-Respons sukses:
-```json
-{
-  "data": [
-    {"tahun_ajaran": "2025/2026", "semester": "Ganjil"},
-    {"tahun_ajaran": "2024/2025", "semester": "Genap"}
-  ]
-}
-```
-
-### 5) GET /nilai
-Nilai mapel untuk satu periode.
-
-Query parameter (wajib dua-duanya):
-- `tahun_ajaran`, contoh `2025/2026`
-- `semester`, nilai `Ganjil` atau `Genap`
-
-Contoh: `GET /nilai?tahun_ajaran=2025/2026&semester=Ganjil`
-
-Respons sukses:
-```json
-{
-  "tahun_ajaran": "2025/2026",
-  "semester": "Ganjil",
-  "mapel": [
-    {"nama": "Matematika", "nilai": 85},
-    {"nama": "Bahasa Inggris", "nilai": null}
-  ],
-  "rata_rata": 85.0
-}
-```
-
-Jika belum ada nilai untuk periode itu: `"mapel": []` dan `"rata_rata": null`.
-
-Catatan aplikasi: nilai `null` ditampilkan "-"; `rata_rata` diambil dari API, tidak dihitung ulang di aplikasi.
+Laravel mengembalikan pesan pada field `pesan` (dan `kode` bila tersedia); validasi mengembalikan HTTP 422 dengan `errors`. Klien mengubah timeout, kegagalan jaringan, validasi, dan error server menjadi pesan yang aman ditampilkan.

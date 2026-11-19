@@ -29,9 +29,7 @@ class _NilaiScreenState extends State<NilaiScreen> {
   @override
   void initState() {
     super.initState();
-    _provider = NilaiProvider(
-      service: widget.service ?? const MockNilaiService(),
-    );
+    _provider = NilaiProvider(service: widget.service ?? HttpNilaiService());
     _unduhService = widget.unduhService ?? UnduhService();
     unawaited(_provider.muatPeriode());
   }
@@ -51,6 +49,7 @@ class _NilaiScreenState extends State<NilaiScreen> {
       await _unduhService.unduh(
         jenis: JenisUnduhan.nilai,
         tahunAjaran: periode.tahunAjaran,
+        tahunAjaranId: periode.tahunAjaranId,
         semester: periode.semester,
       );
     } catch (error) {

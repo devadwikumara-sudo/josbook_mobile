@@ -1,20 +1,15 @@
 class NilaiPeriode {
-  const NilaiPeriode({required this.tahunAjaran, required this.semester});
+  const NilaiPeriode({
+    required this.tahunAjaran,
+    required this.semester,
+    this.tahunAjaranId,
+    this.terpilih = false,
+  });
 
   final String tahunAjaran;
   final String semester;
-
-  factory NilaiPeriode.dariJson(Map<String, dynamic> json) {
-    final tahunAjaran = json['tahun_ajaran'];
-    final semester = json['semester'];
-    if (tahunAjaran is! String ||
-        tahunAjaran.trim().isEmpty ||
-        (semester != 'Ganjil' && semester != 'Genap')) {
-      throw const FormatException('Periode nilai dari server tidak valid.');
-    }
-
-    return NilaiPeriode(tahunAjaran: tahunAjaran, semester: semester as String);
-  }
+  final int? tahunAjaranId;
+  final bool terpilih;
 }
 
 class NilaiMapel {

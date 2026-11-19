@@ -36,7 +36,12 @@ class NilaiProvider extends ChangeNotifier {
       if (request != _requestPeriode) return;
 
       periode = hasil;
-      periodeTerpilih = hasil.isEmpty ? null : hasil.first;
+      periodeTerpilih = hasil.isEmpty
+          ? null
+          : hasil.firstWhere(
+              (item) => item.terpilih,
+              orElse: () => hasil.first,
+            );
       memuatPeriode = false;
       notifyListeners();
 

@@ -7,7 +7,6 @@ import 'features/auth/auth_provider.dart';
 import 'features/auth/forgot_password_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/lupa_password_sukses_screen.dart';
-import 'features/auth/otp_screen.dart';
 import 'features/auth/pendaftaran_sukses_screen.dart';
 import 'features/auth/register_screen.dart';
 import 'features/biodata/biodata_screen.dart';
@@ -64,7 +63,6 @@ class _JosBookAppState extends State<JosBookApp> {
               '/login',
               '/daftar',
               '/lupa-password',
-              '/verifikasi-otp',
               '/daftar-berhasil',
               '/lupa-password-sukses',
             };
@@ -81,7 +79,6 @@ class _JosBookAppState extends State<JosBookApp> {
                 lokasi == '/sesi-aktif' ||
                 lokasi == '/daftar' ||
                 lokasi == '/lupa-password' ||
-                lokasi == '/verifikasi-otp' ||
                 lokasi == '/daftar-berhasil' ||
                 lokasi == '/lupa-password-sukses') {
               return '/home';
@@ -100,16 +97,6 @@ class _JosBookAppState extends State<JosBookApp> {
         GoRoute(
           path: '/lupa-password',
           builder: (_, _) => const ForgotPasswordScreen(),
-        ),
-        GoRoute(
-          path: '/verifikasi-otp',
-          builder: (_, state) {
-            final Object? extra = state.extra;
-            if (extra is! OtpRouteData) {
-              return const OtpScreen(data: null);
-            }
-            return OtpScreen(data: extra);
-          },
         ),
         GoRoute(
           path: '/daftar-berhasil',

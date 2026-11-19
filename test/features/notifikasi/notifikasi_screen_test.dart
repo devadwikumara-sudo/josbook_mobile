@@ -7,6 +7,28 @@ import 'package:josbook_mobile/features/notifikasi/notifikasi_screen.dart';
 import 'package:josbook_mobile/features/notifikasi/notifikasi_service.dart';
 
 void main() {
+  test('parses the Laravel notification envelope', () {
+    final daftar = DaftarNotifikasi.dariJson({
+      'data': {
+        'belum_dibaca': 1,
+        'notifikasi': [
+          {
+            'id': 7,
+            'judul': 'Profil diperbarui',
+            'isi': 'Perubahan profil telah tersimpan.',
+            'waktu': '2026-11-19T02:00:00Z',
+            'jenis': 'info',
+            'dibaca': false,
+          },
+        ],
+      },
+    });
+
+    expect(daftar.jumlahBelumDibaca, 1);
+    expect(daftar.items.single.id, '7');
+    expect(daftar.items.single.deskripsi, 'Perubahan profil telah tersimpan.');
+  });
+
   testWidgets('loads notification cards and marks unread items as read', (
     tester,
   ) async {
@@ -32,7 +54,8 @@ void main() {
     expect(find.text('Notifikasi'), findsOneWidget);
     expect(find.text('Nilai diperbarui'), findsOneWidget);
     expect(find.text('Nilai Matematika telah diperbarui.'), findsOneWidget);
-    expect(service.idDitandai, ['1']);
+    expect(service.jumlahTandaiSemua, 1);
+    expect(service.idDitandai, isEmpty);
     expect(find.bySemanticsLabel('Belum dibaca'), findsNothing);
   });
 
@@ -71,7 +94,7 @@ void main() {
     expect(find.text('Belum ada notifikasi'), findsOneWidget);
   });
 
-  testWidgets('tapping an unread card retries marking it as read', (
+  testWidgets('tapping an unread card marks it as read after bulk failure', (
     tester,
   ) async {
     final service = _FakeNotifikasiService(
@@ -98,7 +121,7 @@ void main() {
     await tester.tap(find.text('Profil diperbarui'));
     await tester.pumpAndSettle();
 
-    expect(service.jumlahPercobaanTandai, 2);
+    expect(service.jumlahPercobaanTandai, 1);
     expect(service.idDitandai, ['2']);
     expect(_finderTitikBelumDibaca(), findsNothing);
   });
@@ -126,6 +149,7 @@ class _FakeNotifikasiService implements NotifikasiService {
   final List<String> idDitandai = [];
   int jumlahPanggilan = 0;
   int jumlahPercobaanTandai = 0;
+  int jumlahTandaiSemua = 0;
 
   @override
   Future<DaftarNotifikasi> ambilNotifikasi() async {
@@ -140,9 +164,14 @@ class _FakeNotifikasiService implements NotifikasiService {
   @override
   Future<void> tandaiDibaca(String id) async {
     jumlahPercobaanTandai++;
-    if (gagalTandaiPertama && jumlahPercobaanTandai == 1) {
+    idDitandai.add(id);
+  }
+
+  @override
+  Future<void> tandaiSemuaDibaca() async {
+    jumlahTandaiSemua++;
+    if (gagalTandaiPertama && jumlahTandaiSemua == 1) {
       throw Exception('server sementara tidak tersedia');
     }
-    idDitandai.add(id);
   }
 }

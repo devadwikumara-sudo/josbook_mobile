@@ -18,17 +18,9 @@ class AuthProvider extends ChangeNotifier {
   String? pesanError;
   String? kodeError;
   Map<String, dynamic>? dataError;
-  int? otpSisaDetik;
-  int? otpSisaPercobaan;
   bool wajibGantiPassword = false;
   bool sesiBerakhir = false;
   String? namaPengguna;
-
-  /// State sementara untuk alur lupa kata sandi: password baru dan token reset
-  /// hanya disimpan di memori aplikasi, bukan di penyimpanan permanen.
-  String? lupaPasswordEmail;
-  String? lupaPasswordPasswordBaru;
-  String? lupaPasswordResetToken;
 
   /// true saat aplikasi dibuka dan token lama masih berlaku: tampilkan layar
   /// "Sesi Masih Aktif" dulu. Login baru tidak perlu konfirmasi ini.
@@ -120,113 +112,19 @@ class AuthProvider extends ChangeNotifier {
 
   Future<bool> lupaPassword({
     required String email,
-    required String passwordBaru,
   }) async {
     sedangMemproses = true;
     pesanError = null;
     sesiBerakhir = false;
     kodeError = null;
     dataError = null;
-    hapusMemoriLupaPassword();
     notifyListeners();
 
     try {
-      final data = await _service.lupaPassword(email: email);
-      lupaPasswordEmail = email.trim();
-      lupaPasswordPasswordBaru = passwordBaru;
-      lupaPasswordResetToken = null;
-      otpSisaDetik = _angka(data['jeda_kirim_ulang_detik']) ?? 60;
+      await _service.lupaPassword(email: email);
       return true;
     } on ApiException catch (e) {
       _simpanError(e);
-      hapusMemoriLupaPassword();
-      return false;
-    } finally {
-      sedangMemproses = false;
-      notifyListeners();
-    }
-  }
-
-  Future<bool> verifikasiOtp({
-    required String email,
-    required String tujuan,
-    required String kode,
-  }) async {
-    sedangMemproses = true;
-    pesanError = null;
-    sesiBerakhir = false;
-    kodeError = null;
-    dataError = null;
-    otpSisaPercobaan = null;
-    notifyListeners();
-
-    try {
-      final data = await _service.verifikasiOtp(
-        email: email,
-        tujuan: tujuan,
-        kode: kode,
-      );
-
-      if (tujuan == 'lupa_password') {
-        final String? resetToken = data['reset_token']?.toString();
-        final String? passwordBaru = lupaPasswordPasswordBaru;
-        final String? emailLupa = lupaPasswordEmail;
-
-        if (resetToken == null ||
-            resetToken.isEmpty ||
-            passwordBaru == null ||
-            passwordBaru.isEmpty ||
-            emailLupa == null ||
-            emailLupa.isEmpty) {
-          throw ApiException(
-            'Proses lupa kata sandi tidak dapat dilanjutkan.',
-            kode: 'lupa_password_batal',
-            statusCode: 422,
-          );
-        }
-
-        await _service.resetPassword(
-          email: emailLupa,
-          resetToken: resetToken,
-          password: passwordBaru,
-        );
-        hapusMemoriLupaPassword();
-        return true;
-      }
-
-      return true;
-    } on ApiException catch (e) {
-      if (tujuan == 'lupa_password') {
-        hapusMemoriLupaPassword();
-      }
-      _simpanError(e);
-      otpSisaPercobaan = _angka(e.data?['sisa_percobaan']);
-      return false;
-    } finally {
-      sedangMemproses = false;
-      notifyListeners();
-    }
-  }
-
-  Future<bool> kirimUlangOtp({
-    required String email,
-    required String tujuan,
-  }) async {
-    sedangMemproses = true;
-    pesanError = null;
-    sesiBerakhir = false;
-    kodeError = null;
-    dataError = null;
-    otpSisaDetik = null;
-    notifyListeners();
-
-    try {
-      final data = await _service.kirimUlangOtp(email: email, tujuan: tujuan);
-      otpSisaDetik = _angka(data['jeda_kirim_ulang_detik']) ?? 60;
-      return true;
-    } on ApiException catch (e) {
-      _simpanError(e);
-      otpSisaDetik = _angka(e.data?['sisa_detik']);
       return false;
     } finally {
       sedangMemproses = false;
@@ -239,9 +137,6 @@ class AuthProvider extends ChangeNotifier {
     kodeError = error.kode;
     dataError = error.data;
   }
-
-  int? _angka(Object? value) =>
-      value is num ? value.toInt() : int.tryParse(value?.toString() ?? '');
 
   Future<void> logout() async {
     await _service.logout();
@@ -292,33 +187,13 @@ class AuthProvider extends ChangeNotifier {
     if (pesanError != null ||
         kodeError != null ||
         dataError != null ||
-        otpSisaPercobaan != null ||
         sesiBerakhir) {
       pesanError = null;
       kodeError = null;
       dataError = null;
-      otpSisaPercobaan = null;
       sesiBerakhir = false;
       notifyListeners();
     }
-  }
-
-  void hapusMemoriLupaPassword() {
-    lupaPasswordEmail = null;
-    lupaPasswordPasswordBaru = null;
-    lupaPasswordResetToken = null;
-    notifyListeners();
-  }
-
-  void batalkanLupaPassword() {
-    hapusMemoriLupaPassword();
-    pesanError = null;
-    sesiBerakhir = false;
-    kodeError = null;
-    dataError = null;
-    otpSisaDetik = null;
-    otpSisaPercobaan = null;
-    notifyListeners();
   }
 
   Future<void> _tanganiSesiBerakhir() async {
@@ -328,11 +203,6 @@ class AuthProvider extends ChangeNotifier {
     barusLogin = false;
     wajibGantiPassword = false;
     namaPengguna = null;
-    lupaPasswordEmail = null;
-    lupaPasswordPasswordBaru = null;
-    lupaPasswordResetToken = null;
-    otpSisaDetik = null;
-    otpSisaPercobaan = null;
     pesanError = 'Sesi berakhir, silakan masuk lagi';
     kodeError = null;
     dataError = null;

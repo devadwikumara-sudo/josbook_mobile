@@ -2,11 +2,18 @@ import 'package:flutter/foundation.dart';
 
 /// Alamat API Laravel.
 ///
-/// Build debug memakai emulator Android secara default. Semua build lain wajib
+/// Build debug memilih alamat lokal sesuai target. Semua build lain wajib
 /// menerima API_BASE_URL lewat --dart-define; build release hanya menerima HTTPS.
 class AppConfig {
   static const String _apiBaseUrl = String.fromEnvironment('API_BASE_URL');
-  static const String _debugBaseUrl = 'http://10.0.2.2:8000/api/v1';
+
+  static String get _debugBaseUrl {
+    if (kIsWeb) return 'http://joslearn_project.test/api/v1';
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:8000/api/v1';
+    }
+    return 'http://127.0.0.1:8000/api/v1';
+  }
 
   static String get baseUrl {
     final String configured = _apiBaseUrl.trim();
@@ -20,7 +27,7 @@ class AppConfig {
       return kDebugMode
           ? null
           : 'API_BASE_URL belum diatur. '
-              'Build kembali dengan alamat server HTTPS.';
+                'Build kembali dengan alamat server HTTPS.';
     }
 
     final Uri? uri = Uri.tryParse(configured);

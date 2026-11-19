@@ -239,16 +239,19 @@ class _FakeNilaiService implements NilaiService {
 class _FakeUnduhService extends UnduhService {
   JenisUnduhan? jenis;
   String? tahunAjaran;
+  int? tahunAjaranId;
   String? semester;
 
   @override
   Future<void> unduh({
     required JenisUnduhan jenis,
     String? tahunAjaran,
+    int? tahunAjaranId,
     String? semester,
   }) async {
     this.jenis = jenis;
     this.tahunAjaran = tahunAjaran;
+    this.tahunAjaranId = tahunAjaranId;
     this.semester = semester;
   }
 }

@@ -32,7 +32,7 @@ class LupaPasswordSuksesScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               const Text(
-                'Kata Sandi Berhasil Diperbarui',
+                'Periksa Email Anda',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: WarnaJosBook.navy,
@@ -42,7 +42,7 @@ class LupaPasswordSuksesScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               const Text(
-                'Password Anda telah berhasil diubah. Silakan login kembali.',
+                'Jika email terdaftar, tautan untuk membuat kata sandi baru akan dikirim. Buka tautan tersebut untuk melanjutkan.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: WarnaJosBook.teks),
               ),

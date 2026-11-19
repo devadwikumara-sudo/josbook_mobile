@@ -5,11 +5,11 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/api_client.dart';
 
 enum JenisUnduhan {
-  biodata('biodata', 'Biodata'),
+  biodata('bio', 'Biodata'),
   nilai('nilai', 'Nilai'),
   hadir('hadir', 'Hadir'),
   ekskul('ekskul', 'Ekskul'),
-  semua('semua', 'Semua');
+  semua('all', 'Semua');
 
   const JenisUnduhan(this.apiValue, this.label);
 
@@ -23,18 +23,19 @@ class UnduhService {
   Future<void> unduh({
     required JenisUnduhan jenis,
     String? tahunAjaran,
+    int? tahunAjaranId,
     String? semester,
   }) async {
     final query = <String, dynamic>{};
     if (!_tanpaPeriode.contains(jenis)) {
-      if (tahunAjaran == null || semester == null) {
+      if (tahunAjaran == null || tahunAjaranId == null || semester == null) {
         throw ArgumentError(
           'Tahun ajaran dan semester wajib untuk unduhan ${jenis.label}.',
         );
       }
       query
-        ..['tahun_ajaran'] = tahunAjaran
-        ..['semester'] = semester.toLowerCase();
+        ..['ta'] = tahunAjaranId
+        ..['semester'] = semester;
     }
 
     final bytes = await ApiClient.instance.getBytes(

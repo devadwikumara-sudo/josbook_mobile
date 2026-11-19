@@ -5,6 +5,8 @@ abstract class NotifikasiService {
   Future<DaftarNotifikasi> ambilNotifikasi();
 
   Future<void> tandaiDibaca(String id);
+
+  Future<void> tandaiSemuaDibaca();
 }
 
 class HttpNotifikasiService implements NotifikasiService {
@@ -21,5 +23,10 @@ class HttpNotifikasiService implements NotifikasiService {
   @override
   Future<void> tandaiDibaca(String id) async {
     await _api.post('/notifikasi/$id/baca');
+  }
+
+  @override
+  Future<void> tandaiSemuaDibaca() async {
+    await _api.post('/notifikasi/baca');
   }
 }

@@ -41,8 +41,6 @@ class HomeData {
     required this.aktivitas,
   });
 
-  static const String sekolahBawaan = 'SMA NEGERI 1 REJOSO';
-
   final String nama;
   final String nisn;
   final String kelas;
@@ -56,7 +54,8 @@ class HomeData {
 
   factory HomeData.dariJson(Map<String, dynamic> j) {
     final Object? foto = j['foto_url'];
-    final Object? daftar = j['aktivitas'];
+    final Object? daftar = j['aktivitas'] ?? j['aktivitas_terbaru'];
+    final Object? belumDibaca = j['belum_dibaca'];
 
     return HomeData(
       nama: _teks(j['nama'], '-'),
@@ -65,17 +64,21 @@ class HomeData {
       status: _teks(j['status'], '-'),
       tahunAjaran: _teks(j['tahun_ajaran'], '-'),
       semester: _teks(j['semester'], '-'),
-      sekolah: _teks(j['sekolah'], sekolahBawaan),
+      sekolah: _teks(j['sekolah'], '-'),
       fotoUrl: (foto == null || foto.toString().trim().isEmpty)
           ? null
           : foto.toString().trim(),
       adaNotifikasiBaru:
-          j['ada_notifikasi_baru'] == true || j['ada_notifikasi_baru'] == 1,
+          j['ada_notifikasi_baru'] == true ||
+          j['ada_notifikasi_baru'] == 1 ||
+          (belumDibaca is num && belumDibaca > 0),
       aktivitas: daftar is List
           ? daftar
-              .whereType<Map>()
-              .map((e) => ItemAktivitas.dariJson(Map<String, dynamic>.from(e)))
-              .toList()
+                .whereType<Map>()
+                .map(
+                  (e) => ItemAktivitas.dariJson(Map<String, dynamic>.from(e)),
+                )
+                .toList()
           : const [],
     );
   }
@@ -87,8 +90,18 @@ String _teks(Object? nilai, String cadangan) {
 }
 
 const List<String> _bulan = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-  'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'Mei',
+  'Jun',
+  'Jul',
+  'Agu',
+  'Sep',
+  'Okt',
+  'Nov',
+  'Des',
 ];
 
 /// Ubah waktu ISO dari server menjadi "Hari ini · 07:12 WIB",
@@ -100,14 +113,20 @@ String formatWaktuWib(String? mentah) {
   if (t == null) return mentah;
 
   final DateTime wib = t.isUtc ? t.add(const Duration(hours: 7)) : t;
-  final DateTime sekarang = DateTime.now().toUtc().add(const Duration(hours: 7));
+  final DateTime sekarang = DateTime.now().toUtc().add(
+    const Duration(hours: 7),
+  );
 
-  final DateTime hariIni =
-      DateTime.utc(sekarang.year, sekarang.month, sekarang.day);
+  final DateTime hariIni = DateTime.utc(
+    sekarang.year,
+    sekarang.month,
+    sekarang.day,
+  );
   final DateTime hariItu = DateTime.utc(wib.year, wib.month, wib.day);
   final int selisih = hariIni.difference(hariItu).inDays;
 
-  final String jam = '${wib.hour.toString().padLeft(2, '0')}:'
+  final String jam =
+      '${wib.hour.toString().padLeft(2, '0')}:'
       '${wib.minute.toString().padLeft(2, '0')} WIB';
 
   if (selisih == 0) return 'Hari ini · $jam';

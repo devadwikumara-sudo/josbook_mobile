@@ -42,7 +42,7 @@ class PendaftaranSuksesScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               const Text(
-                'Email Anda telah terverifikasi. Silakan login ke JosBook.',
+                'Akun Anda sudah aktif. Silakan login ke JosBook.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: WarnaJosBook.teks),
               ),

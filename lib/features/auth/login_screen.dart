@@ -144,10 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {
-                  context.read<AuthProvider>().batalkanLupaPassword();
-                  context.go('/lupa-password');
-                },
+                onPressed: () => context.go('/lupa-password'),
                 child: const Text(
                   'Lupa password?',
                   style: TextStyle(

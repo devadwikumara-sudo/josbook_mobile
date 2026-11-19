@@ -61,7 +61,14 @@ class _UnduhScreenState extends State<UnduhScreen> {
       if (!mounted) return;
       setState(() {
         _periode = hasil;
-        _periodeTerpilih = pilihan ?? (hasil.isEmpty ? null : hasil.first);
+        _periodeTerpilih =
+            pilihan ??
+            (hasil.isEmpty
+                ? null
+                : hasil.firstWhere(
+                    (item) => item.terpilih,
+                    orElse: () => hasil.first,
+                  ));
         _memuatPeriode = false;
       });
     } catch (error) {
@@ -82,6 +89,7 @@ class _UnduhScreenState extends State<UnduhScreen> {
       await _service.unduh(
         jenis: _jenis,
         tahunAjaran: _butuhPeriode ? periode?.tahunAjaran : null,
+        tahunAjaranId: _butuhPeriode ? periode?.tahunAjaranId : null,
         semester: _butuhPeriode ? periode?.semester : null,
       );
     } catch (error) {

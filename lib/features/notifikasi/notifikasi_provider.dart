@@ -51,13 +51,9 @@ class NotifikasiProvider extends ChangeNotifier {
   }
 
   Future<void> tandaiSemuaDibaca() async {
-    final ids = _items
-        .where((item) => !item.dibaca)
-        .map((item) => item.id)
-        .toList(growable: false);
-    for (final id in ids) {
-      await tandaiDibaca(id);
-    }
+    if (_jumlahBelumDibaca == 0) return;
+    await _service.tandaiSemuaDibaca();
+    _items = _items.map((item) => item.tandaiDibaca()).toList(growable: false);
     _jumlahBelumDibaca = 0;
     notifyListeners();
   }

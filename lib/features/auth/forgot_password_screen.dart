@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme.dart';
 import 'auth_provider.dart';
-import 'otp_screen.dart';
 import 'widgets/field_auth.dart';
 import 'widgets/kotak_error_auth.dart';
 import 'widgets/latar_auth.dart';
@@ -18,13 +17,9 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _email = TextEditingController();
-  final TextEditingController _passwordBaru = TextEditingController();
-  final TextEditingController _konfirmasiPassword = TextEditingController();
 
   String? _errorLokal;
   bool _emailBermasalah = false;
-  bool _passwordBermasalah = false;
-  bool _konfirmasiBermasalah = false;
 
   @override
   void initState() {
@@ -37,37 +32,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   void dispose() {
     _email.dispose();
-    _passwordBaru.dispose();
-    _konfirmasiPassword.dispose();
     super.dispose();
   }
 
   String? _validasi() {
     final String email = _email.text.trim();
-    final String passwordBaru = _passwordBaru.text;
-    final String konfirmasi = _konfirmasiPassword.text;
 
     _emailBermasalah = email.isEmpty;
-    _passwordBermasalah = passwordBaru.isEmpty;
-    _konfirmasiBermasalah = konfirmasi.isEmpty;
 
-    if (email.isEmpty || passwordBaru.isEmpty || konfirmasi.isEmpty) {
-      return 'Semua kolom wajib diisi.';
+    if (email.isEmpty) {
+      return 'Email wajib diisi.';
     }
 
     if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
       _emailBermasalah = true;
       return 'Format email tidak valid.';
-    }
-
-    if (passwordBaru.length < 8) {
-      _passwordBermasalah = true;
-      return 'Password minimal 8 karakter.';
-    }
-
-    if (passwordBaru != konfirmasi) {
-      _konfirmasiBermasalah = true;
-      return 'Konfirmasi password tidak sesuai.';
     }
 
     return null;
@@ -85,53 +64,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
 
     setState(() => _errorLokal = null);
-    final bool berhasil = await auth.lupaPassword(
-      email: _email.text.trim(),
-      passwordBaru: _passwordBaru.text,
-    );
+    final bool berhasil = await auth.lupaPassword(email: _email.text.trim());
 
     if (!mounted) return;
 
     if (berhasil) {
-      final String email = _email.text.trim();
-      context.go(
-        '/verifikasi-otp',
-        extra: OtpRouteData(
-          email: email,
-          emailTersamar: _samarkanEmail(email),
-          tujuan: 'lupa_password',
-          jedaKirimUlangDetik: auth.otpSisaDetik ?? 60,
-        ),
-      );
+      context.go('/lupa-password-sukses');
       return;
     }
 
-    final String pesanError =
-        auth.pesanError ??
-        'Email atau kata sandi yang dimasukkan tidak sesuai.';
+    final String pesanError = auth.pesanError ?? 'Permintaan reset gagal.';
     setState(() => _errorLokal = pesanError);
   }
 
-  String _samarkanEmail(String email) {
-    final int pemisah = email.indexOf('@');
-    if (pemisah <= 0) return email;
-    final String nama = email.substring(0, pemisah);
-    final String namaDisamarkan = nama.length <= 2
-        ? nama
-        : '${nama.substring(0, 2)}****';
-    return '$namaDisamarkan${email.substring(pemisah)}';
-  }
-
   void _bersihkanError() {
-    if (_errorLokal != null ||
-        _emailBermasalah ||
-        _passwordBermasalah ||
-        _konfirmasiBermasalah) {
+    if (_errorLokal != null || _emailBermasalah || _emailBermasalah) {
       setState(() {
         _errorLokal = null;
         _emailBermasalah = false;
-        _passwordBermasalah = false;
-        _konfirmasiBermasalah = false;
       });
     }
     context.read<AuthProvider>().hapusError();
@@ -173,29 +123,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   textInputAction: TextInputAction.next,
                   onChanged: (_) => _bersihkanError(),
                 ),
-                const SizedBox(height: 14),
-                FieldAuth(
-                  key: const ValueKey('password_lupa_password'),
-                  label: 'Kata Sandi Baru',
-                  hint: 'Minimal 8 karakter',
-                  controller: _passwordBaru,
-                  sandi: true,
-                  adaError: _passwordBermasalah || auth.pesanError != null,
-                  textInputAction: TextInputAction.next,
-                  onChanged: (_) => _bersihkanError(),
-                ),
-                const SizedBox(height: 14),
-                FieldAuth(
-                  key: const ValueKey('konfirmasi_password_lupa_password'),
-                  label: 'Konfirmasi Kata Sandi',
-                  hint: 'Ulangi kata sandi baru',
-                  controller: _konfirmasiPassword,
-                  sandi: true,
-                  adaError: _konfirmasiBermasalah || auth.pesanError != null,
-                  textInputAction: TextInputAction.done,
-                  onChanged: (_) => _bersihkanError(),
-                  onSubmitted: (_) => _simpanPerubahan(),
-                ),
                 const SizedBox(height: 22),
                 SizedBox(
                   height: 50,
@@ -220,7 +147,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             ),
                           )
                         : const Text(
-                            'Simpan Perubahan',
+                            'Kirim Tautan Reset',
                             style: TextStyle(fontSize: 16),
                           ),
                   ),
@@ -238,10 +165,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () {
-                        context.read<AuthProvider>().batalkanLupaPassword();
-                        context.go('/login');
-                      },
+                      onTap: () => context.go('/login'),
                       child: const Text(
                         'Login',
                         style: TextStyle(

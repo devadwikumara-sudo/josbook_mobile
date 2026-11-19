@@ -83,11 +83,11 @@ Rilis tidak menggunakan URL default emulator.
 ## Checklist uji di HP Android asli
 
 - [ ] Instal APK release yang ditandatangani; pastikan koneksi API memakai HTTPS.
-- [ ] Daftar akun dan selesaikan verifikasi OTP.
+- [ ] Daftar akun siswa yang nama dan NISN-nya cocok dengan data sekolah.
 - [ ] Login dengan akun siswa.
 - [ ] Buka nilai dan pastikan satu semester tampil.
 - [ ] Unduh PDF dan buka/bagikan hasilnya.
-- [ ] Jalankan alur lupa sandi dan verifikasi OTP.
+- [ ] Jalankan alur lupa sandi dan selesaikan reset melalui tautan email.
 - [ ] Buka notifikasi; pastikan daftar dari backend tampil dan status baca
       tersimpan setelah layar dibuka atau kartu ditekan.
 - [ ] Logout semua sesi dan pastikan aplikasi kembali ke alur login.

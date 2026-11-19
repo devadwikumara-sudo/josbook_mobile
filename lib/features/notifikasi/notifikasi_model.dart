@@ -27,7 +27,7 @@ class Notifikasi {
   factory Notifikasi.dariJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
     final Object? judul = json['judul'];
-    final Object? deskripsi = json['deskripsi'];
+    final Object? deskripsi = json['isi'] ?? json['deskripsi'] ?? '';
     final Object? waktu = json['waktu'] ?? json['created_at'];
     final Object? jenis = json['jenis'];
     final Object? statusDibaca = json['dibaca'];
@@ -66,8 +66,11 @@ class DaftarNotifikasi {
   final int jumlahBelumDibaca;
 
   factory DaftarNotifikasi.dariJson(Map<String, dynamic> json) {
-    final Object? data = json['data'];
-    final Object? jumlah = json['belum_dibaca'];
+    final Object? isi = json['data'];
+    final Object? data = isi is Map ? isi['notifikasi'] : isi;
+    final Object? jumlah = isi is Map
+        ? isi['belum_dibaca']
+        : json['belum_dibaca'];
     if (data is! List || (jumlah != null && jumlah is! int)) {
       throw const FormatException('Daftar notifikasi dari server tidak valid.');
     }

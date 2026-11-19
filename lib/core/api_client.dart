@@ -229,9 +229,7 @@ class ApiClient {
       '/login',
       '/daftar',
       '/lupa-password',
-      '/verifikasi-otp',
       '/reset-password',
-      '/kirim-ulang-otp',
     ];
     return routes.any(path.endsWith);
   }

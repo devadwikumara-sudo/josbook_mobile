@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme.dart';
 import 'auth_provider.dart';
-import 'otp_screen.dart';
 import 'widgets/field_auth.dart';
 import 'widgets/kotak_error_auth.dart';
 import 'widgets/latar_auth.dart';
@@ -105,26 +104,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted) return;
 
     if (data != null) {
-      final Object? jeda = data['jeda_kirim_ulang_detik'];
-      context.go(
-        '/verifikasi-otp',
-        extra: OtpRouteData(
-          email: _email.text.trim(),
-          emailTersamar:
-              data['email']?.toString() ?? _samarkanEmail(_email.text.trim()),
-          tujuan: 'daftar',
-          jedaKirimUlangDetik: jeda is num ? jeda.toInt() : 60,
-        ),
-      );
+      context.go('/daftar-berhasil');
     }
-  }
-
-  String _samarkanEmail(String email) {
-    final int pemisah = email.indexOf('@');
-    if (pemisah <= 0) return email;
-    final String nama = email.substring(0, pemisah);
-    return '${nama.length <= 2 ? nama : '${nama.substring(0, 2)}****'}'
-        '${email.substring(pemisah)}';
   }
 
   void _bersihkanError() {
