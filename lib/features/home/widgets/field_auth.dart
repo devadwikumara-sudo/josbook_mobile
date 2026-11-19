@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme.dart';
-import '../auth_warna.dart';
+import '../../auth/auth_warna.dart';
 
 /// Kolom input dengan label di atasnya. Bila [sandi] true, teks disembunyikan
 /// secara default dan ada ikon mata untuk menampilkan/menyembunyikan.

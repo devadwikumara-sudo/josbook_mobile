@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme.dart';
-import '../auth_warna.dart';
+import '../../auth/auth_warna.dart';
 
 /// Tab "Masuk" | "Daftar" di bagian atas form.
 class TabAuth extends StatelessWidget {
