@@ -1,3 +1,7 @@
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart';
+
 import '../../core/api_client.dart';
 import 'profil_model.dart';
 
@@ -46,5 +50,16 @@ class ProfilService {
       if (error.statusCode == 404) return null;
       rethrow;
     }
+  }
+
+  /// POST /profil/foto — menyimpan foto profil siswa.
+  Future<void> simpanFoto({
+    required Uint8List bytes,
+    required String namaFile,
+  }) async {
+    final FormData data = FormData.fromMap({
+      'foto_file': MultipartFile.fromBytes(bytes, filename: namaFile),
+    });
+    await _api.post('/profil/foto', data: data);
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../core/api_client.dart';
 import 'profil_model.dart';
@@ -13,6 +14,7 @@ class ProfilProvider extends ChangeNotifier {
   ProfilData? data;
   Uint8List? foto;
   bool memuat = false;
+  bool sedangMengubahFoto = false;
   String? error;
 
   /// Muat profil bila belum ada (atau paksa dengan [paksa]).
@@ -50,6 +52,39 @@ class ProfilProvider extends ChangeNotifier {
       alamat: alamat,
     );
     notifyListeners();
+  }
+
+  /// Pilih foto dari galeri lalu simpan ke server.
+  Future<bool> pilihFoto() async {
+    if (sedangMengubahFoto) return false;
+
+    sedangMengubahFoto = true;
+    notifyListeners();
+    try {
+      final XFile? pilihan = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1200,
+        maxHeight: 1200,
+        imageQuality: 85,
+      );
+      if (pilihan == null) return false;
+
+      final Uint8List bytes = await pilihan.readAsBytes();
+      if (bytes.isEmpty) {
+        throw const ApiException('File foto kosong. Pilih foto lain.');
+      }
+      if (bytes.length > 2 * 1024 * 1024) {
+        throw const ApiException('Ukuran foto maksimal 2 MB. Pilih foto lain.');
+      }
+
+      await _service.simpanFoto(bytes: bytes, namaFile: pilihan.name);
+      foto = bytes;
+      data = data?.copyWith(adaFoto: true);
+      return true;
+    } finally {
+      sedangMengubahFoto = false;
+      notifyListeners();
+    }
   }
 
   Future<void> gantiPassword({

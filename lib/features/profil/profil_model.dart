@@ -28,6 +28,20 @@ class ProfilData {
   final String? nomorHp;
   final bool adaFoto;
 
+  ProfilData copyWith({bool? adaFoto}) => ProfilData(
+        nama: nama,
+        nisn: nisn,
+        kelas: kelas,
+        jenisKelamin: jenisKelamin,
+        tempatLahir: tempatLahir,
+        tanggalLahir: tanggalLahir,
+        alamat: alamat,
+        alamatJalan: alamatJalan,
+        email: email,
+        nomorHp: nomorHp,
+        adaFoto: adaFoto ?? this.adaFoto,
+      );
+
   factory ProfilData.dariJson(Map<String, dynamic> j) => ProfilData(
         nama: (j['nama'] ?? '-').toString(),
         nisn: (j['nisn'] ?? '-').toString(),

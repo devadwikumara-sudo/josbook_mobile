@@ -27,10 +27,7 @@ class ConfigurationErrorApp extends StatelessWidget {
                   const Text(
                     'Konfigurasi server belum tersedia',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 8),
                   Text(message, textAlign: TextAlign.center),

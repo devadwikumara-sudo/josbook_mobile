@@ -1,9 +1,9 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/api_client.dart';
 import '../../features/profil/profil_provider.dart';
 import '../../../core/theme.dart';
 
@@ -83,7 +83,13 @@ class LatarProfil extends StatelessWidget {
                   children: [
                     if (denganHeaderPengguna) ...[
                       const SizedBox(height: 12),
-                      Center(child: _Avatar(foto: profil.foto)),
+                      Center(
+                        child: _Avatar(
+                          foto: profil.foto,
+                          sedangMengubahFoto: profil.sedangMengubahFoto,
+                          onTap: () => _pilihFoto(context),
+                        ),
+                      ),
                       const SizedBox(height: 14),
                       Text(
                         profil.data?.nama ?? (profil.memuat ? 'Memuat…' : '-'),
@@ -117,35 +123,108 @@ class LatarProfil extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> _pilihFoto(BuildContext context) async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    try {
+      final bool berhasil = await context.read<ProfilProvider>().pilihFoto();
+      if (!context.mounted || !berhasil) return;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Foto profil berhasil diperbarui.')),
+        );
+    } on ApiException catch (error) {
+      if (!context.mounted) return;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(error.pesan)));
+    } on PlatformException {
+      if (!context.mounted) return;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Galeri foto tidak dapat dibuka.')),
+        );
+    }
+  }
 }
 
 class _Avatar extends StatelessWidget {
-  const _Avatar({this.foto});
+  const _Avatar({
+    this.foto,
+    required this.sedangMengubahFoto,
+    required this.onTap,
+  });
 
   final Uint8List? foto;
+  final bool sedangMengubahFoto;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 96,
-      height: 96,
-      padding: const EdgeInsets.all(3),
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        color: Color(0xFF2F6FED),
-      ),
-      child: ClipOval(
-        child: foto != null
-            ? Image.memory(foto!, fit: BoxFit.cover, width: 90, height: 90)
-            : Container(
-                color: const Color(0xFFDCE9FF),
-                alignment: Alignment.center,
-                child: const Icon(
-                  Icons.person_rounded,
-                  size: 56,
-                  color: Color(0xFF1F3A8A),
-                ),
+    return Semantics(
+      button: true,
+      label: 'Ubah foto profil',
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: sedangMengubahFoto ? null : onTap,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              width: 96,
+              height: 96,
+              padding: const EdgeInsets.all(3),
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color(0xFF2F6FED),
               ),
+              child: ClipOval(
+                child: foto != null
+                    ? Image.memory(
+                        foto!,
+                        fit: BoxFit.cover,
+                        width: 90,
+                        height: 90,
+                      )
+                    : Container(
+                        color: const Color(0xFFDCE9FF),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.person_rounded,
+                          size: 56,
+                          color: Color(0xFF1F3A8A),
+                        ),
+                      ),
+              ),
+            ),
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: sedangMengubahFoto
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(
+                        Icons.camera_alt_rounded,
+                        size: 18,
+                        color: WarnaJosBook.navy,
+                      ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -232,13 +311,18 @@ class IsianProfil extends StatelessWidget {
             style: const TextStyle(fontSize: 13, color: WarnaJosBook.teks),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF8A94A6)),
+              hintStyle: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF8A94A6),
+              ),
               isDense: true,
               filled: !aktif,
               fillColor: const Color(0xFFEFEFEF),
               suffixIcon: suffix,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 13,
+              ),
               border: _garis(const Color(0xFFD6E0F0)),
               enabledBorder: _garis(const Color(0xFFD6E0F0)),
               disabledBorder: _garis(const Color(0xFFE2E2E2)),
@@ -253,9 +337,9 @@ class IsianProfil extends StatelessWidget {
   }
 
   OutlineInputBorder _garis(Color c) => OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: c),
-      );
+    borderRadius: BorderRadius.circular(12),
+    borderSide: BorderSide(color: c),
+  );
 }
 
 /// Tombol biru penuh ("Simpan Perubahan", "Simpan Password").
@@ -282,7 +366,9 @@ class TombolBiru extends StatelessWidget {
         onPressed: memproses ? null : onPressed,
         style: FilledButton.styleFrom(
           backgroundColor: warna,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
         child: memproses
             ? const SizedBox(

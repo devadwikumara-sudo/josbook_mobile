@@ -8,7 +8,6 @@ import '../home/widgets/field_auth.dart';
 import '../home/widgets/kotak_error_auth.dart';
 import '../home/widgets/latar_auth.dart';
 import '../home/widgets/tab_auth.dart';
-import '../home/widgets/tombol_google_auth.dart';
 
 /// Layar Login (desain: login 1 - login 4).
 class LoginScreen extends StatefulWidget {
@@ -95,12 +94,6 @@ class _LoginScreenState extends State<LoginScreen> {
     context.read<AuthProvider>().hapusError();
   }
 
-  void _tampilkanInfo(String pesan) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(pesan)));
-  }
-
   @override
   Widget build(BuildContext context) {
     final AuthProvider auth = context.watch<AuthProvider>();
@@ -155,10 +148,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            TombolGoogleAuth(
-              onTap: () => _tampilkanInfo('Login dengan Google segera hadir.'),
-            ),
-            const SizedBox(height: 12),
             SizedBox(
               height: 50,
               child: FilledButton(
