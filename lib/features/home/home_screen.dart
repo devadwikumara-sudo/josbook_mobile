@@ -11,6 +11,7 @@ import '../auth/auth_provider.dart';
 import 'home_data.dart';
 import 'home_service.dart';
 import 'home_warna.dart';
+import '../profil/profil_provider.dart';
 import '../notifikasi/notifikasi_model.dart';
 import '../notifikasi/notifikasi_provider.dart';
 import '../notifikasi/notifikasi_service.dart';
@@ -77,6 +78,9 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final HomeData data = await _service.muat();
       if (!mounted) return;
+      if (data.fotoUrl != null) {
+        unawaited(context.read<ProfilProvider>().muat());
+      }
       setState(() {
         _data = data;
         _pesanError = null;
@@ -163,6 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _isi() {
     final HomeData? data = _data;
+    final profil = context.watch<ProfilProvider>();
 
     if (data == null) {
       if (_memuat) {
@@ -191,7 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onNotifikasi: _bukaNotifikasi,
           ),
           const SizedBox(height: 24),
-          SapaanHome(data: data),
+          SapaanHome(data: data, foto: profil.foto),
           const SizedBox(height: 28),
           if (wajibGanti) ...[
             _bannerGantiPassword(),

@@ -1,19 +1,22 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import '../home_data.dart';
 
 /// Foto + "Halo, {nama} 👋" + chip kelas dan NISN.
 class SapaanHome extends StatelessWidget {
-  const SapaanHome({super.key, required this.data});
+  const SapaanHome({super.key, required this.data, required this.foto});
 
   final HomeData data;
+  final Uint8List? foto;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        AvatarSiswa(nama: data.nama, fotoUrl: data.fotoUrl),
+        AvatarSiswa(nama: data.nama, foto: foto),
         const SizedBox(width: 16),
         Expanded(
           child: Column(
@@ -36,13 +39,16 @@ class SapaanHome extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.35)),
+                    color: Colors.white.withValues(alpha: 0.35),
+                  ),
                 ),
                 child: Text(
                   'Kelas ${data.kelas} | NISN: ${data.nisn}',
@@ -62,17 +68,20 @@ class AvatarSiswa extends StatelessWidget {
   const AvatarSiswa({
     super.key,
     required this.nama,
-    required this.fotoUrl,
+    required this.foto,
     this.ukuran = 92,
   });
 
   final String nama;
-  final String? fotoUrl;
+  final Uint8List? foto;
   final double ukuran;
 
   String get _inisial {
-    final List<String> kata =
-        nama.trim().split(RegExp(r'\s+')).where((k) => k.isNotEmpty).toList();
+    final List<String> kata = nama
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((k) => k.isNotEmpty)
+        .toList();
     if (kata.isEmpty) return '?';
     final String awal = kata.first[0];
     final String akhir = kata.length > 1 ? kata[1][0] : '';
@@ -105,10 +114,10 @@ class AvatarSiswa extends StatelessWidget {
           shape: BoxShape.circle,
         ),
         child: ClipOval(
-          child: (fotoUrl == null)
+          child: (foto == null)
               ? inisial
-              : Image.network(
-                  fotoUrl!,
+              : Image.memory(
+                  foto!,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => inisial,
                 ),

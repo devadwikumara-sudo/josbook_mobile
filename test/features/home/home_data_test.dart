@@ -1,5 +1,10 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:josbook_mobile/features/home/home_data.dart';
+import 'package:josbook_mobile/features/home/widgets/sapaan_home.dart';
 
 void main() {
   test('parses Laravel home activity and unread notification fields', () {
@@ -23,5 +28,24 @@ void main() {
     expect(data.adaNotifikasiBaru, isTrue);
     expect(data.aktivitas.single.judul, 'Nilai diperbarui');
     expect(data.aktivitas.single.waktu, isNotEmpty);
+  });
+
+  testWidgets('home avatar uses the authenticated profile photo bytes', (
+    tester,
+  ) async {
+    final Uint8List foto = base64Decode(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jzZkAAAAASUVORK5CYII=',
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: AvatarSiswa(nama: 'Siswa', foto: foto),
+        ),
+      ),
+    );
+
+    final Image avatar = tester.widget(find.byType(Image));
+    expect(avatar.image, isA<MemoryImage>());
   });
 }
