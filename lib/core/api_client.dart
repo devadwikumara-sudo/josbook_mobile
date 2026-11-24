@@ -229,7 +229,6 @@ class ApiClient {
       '/login',
       '/daftar',
       '/lupa-password',
-      '/reset-password',
     ];
     return routes.any(path.endsWith);
   }
