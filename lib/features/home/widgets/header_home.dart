@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../home_warna.dart';
+import 'animasi_home.dart';
 
 /// Baris paling atas: logo, nama aplikasi + sekolah, dan lonceng notifikasi.
 class HeaderHome extends StatelessWidget {
@@ -22,10 +23,17 @@ class HeaderHome extends StatelessWidget {
         Container(
           width: 46,
           height: 46,
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.all(5),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Image.asset(
             'assets/images/josbook-logo.png',
@@ -43,15 +51,19 @@ class HeaderHome extends StatelessWidget {
                 'JosBook',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 18,
+                  fontSize: 19,
                   fontWeight: FontWeight.w800,
+                  letterSpacing: -0.2,
                 ),
               ),
               Text(
                 'Buku Induk siswa $sekolah',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.white70, fontSize: 12),
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontSize: 12,
+                ),
               ),
             ],
           ),
@@ -62,61 +74,85 @@ class HeaderHome extends StatelessWidget {
           label: jumlahBelumDibaca > 0
               ? 'Notifikasi, $jumlahBelumDibaca belum dibaca'
               : 'Notifikasi',
-          child: Material(
-            color: Colors.white.withValues(alpha: 0.18),
-            shape: const CircleBorder(),
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              onTap: onNotifikasi,
-              child: SizedBox(
-                width: 46,
-                height: 46,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    const Icon(
-                      Icons.notifications_none_rounded,
-                      color: Colors.white,
-                    ),
-                    if (jumlahBelumDibaca > 0)
-                      Positioned(
-                        right: 5,
-                        top: 4,
-                        child: jumlahBelumDibaca > 9
-                            ? Container(
-                                constraints: const BoxConstraints(
-                                  minWidth: 17,
-                                  minHeight: 17,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                ),
-                                alignment: Alignment.center,
-                                decoration: const BoxDecoration(
-                                  color: HomeWarna.merahTitik,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Text(
-                                  jumlahBelumDibaca > 99
-                                      ? '99+'
-                                      : '$jumlahBelumDibaca',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w800,
+          child: KartuTekan(
+            skalaTekan: 0.92,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.16),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.28),
+                ),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: onNotifikasi,
+                  child: SizedBox(
+                    width: 46,
+                    height: 46,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        const Icon(
+                          Icons.notifications_none_rounded,
+                          color: Colors.white,
+                        ),
+                        Positioned(
+                          right: 6,
+                          top: 5,
+                          child: AnimatedScale(
+                            scale: jumlahBelumDibaca > 0 ? 1.0 : 0.0,
+                            duration: const Duration(milliseconds: 240),
+                            curve: Curves.easeOutBack,
+                            child: jumlahBelumDibaca > 9
+                                ? Container(
+                                    constraints: const BoxConstraints(
+                                      minWidth: 18,
+                                      minHeight: 18,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: HomeWarna.merahTitik,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      jumlahBelumDibaca > 99
+                                          ? '99+'
+                                          : '$jumlahBelumDibaca',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  )
+                                : Container(
+                                    width: 10,
+                                    height: 10,
+                                    decoration: BoxDecoration(
+                                      color: HomeWarna.merahTitik,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 1.5,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              )
-                            : Container(
-                                width: 9,
-                                height: 9,
-                                decoration: const BoxDecoration(
-                                  color: HomeWarna.merahTitik,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                      ),
-                  ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),

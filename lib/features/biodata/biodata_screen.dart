@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/api_client.dart';
 import '../../core/theme.dart';
+import '../../shared/widgets/animasi_josbook.dart';
+import '../../shared/widgets/latar_halaman.dart';
 import '../../shared/widgets/navbar.dart';
 import '../../shared/widgets/state_views.dart';
 import '../unduh/unduh_service.dart';
@@ -85,52 +87,16 @@ class _BiodataScreenState extends State<BiodataScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: latarHalamanJosBook,
       bottomNavigationBar: const NavbarJosBook(aktif: TabNav.biodata),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              WarnaJosBook.navy,
-              Color(0xFF2F80ED),
-              Color(0xFFEAF2FF),
-              Colors.white,
-            ],
-            stops: [0, 0.22, 0.42, 0.58],
-          ),
-        ),
+      body: LatarGradasiJosBook(
         child: SafeArea(
           child: Column(
             children: [
-              SizedBox(
-                height: 72,
-                child: Row(
-                  children: [
-                    const SizedBox(width: 12),
-                    Material(
-                      color: Colors.white.withValues(alpha: 0.14),
-                      shape: const CircleBorder(),
-                      child: IconButton(
-                        tooltip: 'Kembali ke Home',
-                        onPressed: () => context.go('/home'),
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      ),
-                    ),
-                    const Expanded(
-                      child: Text(
-                        'Biodata',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 56),
-                  ],
-                ),
+              HeaderHalamanJosBook(
+                judul: 'Biodata',
+                tooltipKembali: 'Kembali ke Home',
+                onKembali: () => context.go('/home'),
               ),
               Expanded(child: _konten()),
             ],
@@ -163,68 +129,108 @@ class _BiodataScreenState extends State<BiodataScreen> {
 
     final data = _data!;
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: const Text(
-            'HANYA LIHAT',
-            style: TextStyle(
-              color: WarnaJosBook.navy,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
+        MasukBertahap(
+          tunda: Duration.zero,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.92),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white),
+                boxShadow: [
+                  BoxShadow(
+                    color: WarnaJosBook.navy.withValues(alpha: 0.08),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.visibility_outlined,
+                    size: 14,
+                    color: WarnaJosBook.navy,
+                  ),
+                  SizedBox(width: 6),
+                  Text(
+                    'HANYA LIHAT',
+                    style: TextStyle(
+                      color: WarnaJosBook.navy,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-        const SizedBox(height: 9),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x22000000),
-                blurRadius: 5,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              for (final row in data.baris)
-                _BarisBiodata(label: row.key, nilai: row.value),
-            ],
+        const SizedBox(height: 12),
+        MasukBertahap(
+          tunda: const Duration(milliseconds: 70),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: garisKartuJosBook),
+              boxShadow: [
+                BoxShadow(
+                  color: WarnaJosBook.navy.withValues(alpha: 0.06),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                for (int i = 0; i < data.baris.length; i++)
+                  _BarisBiodata(
+                    label: data.baris[i].key,
+                    nilai: data.baris[i].value,
+                    terakhir: i == data.baris.length - 1,
+                  ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 20),
-        SizedBox(
-          height: 46,
-          child: FilledButton.icon(
-            onPressed: _sedangUnduh ? null : _unduh,
-            style: FilledButton.styleFrom(
-              backgroundColor: WarnaJosBook.navy,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+        MasukBertahap(
+          tunda: const Duration(milliseconds: 140),
+          child: KartuTekan(
+            child: SizedBox(
+              height: 50,
+              child: FilledButton.icon(
+                onPressed: _sedangUnduh ? null : _unduh,
+                style: FilledButton.styleFrom(
+                  backgroundColor: WarnaJosBook.navy,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                icon: _sedangUnduh
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.file_download_outlined),
+                label: Text(
+                  _sedangUnduh ? 'Menyiapkan PDF...' : 'Unduh biodata (PDF)',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
               ),
-            ),
-            icon: _sedangUnduh
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Icon(Icons.file_download_outlined),
-            label: Text(
-              _sedangUnduh ? 'Menyiapkan PDF...' : 'Unduh biodata (PDF)',
             ),
           ),
         ),
@@ -234,18 +240,25 @@ class _BiodataScreenState extends State<BiodataScreen> {
 }
 
 class _BarisBiodata extends StatelessWidget {
-  const _BarisBiodata({required this.label, required this.nilai});
+  const _BarisBiodata({
+    required this.label,
+    required this.nilai,
+    this.terakhir = false,
+  });
 
   final String label;
   final String nilai;
+  final bool terakhir;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 28),
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFE4EAF2))),
+      constraints: const BoxConstraints(minHeight: 34),
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        border: terakhir
+            ? null
+            : const Border(bottom: BorderSide(color: garisKartuJosBook)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -253,7 +266,7 @@ class _BarisBiodata extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(color: Color(0xFF718096), fontSize: 12),
+              style: const TextStyle(color: teksPudarJosBook, fontSize: 12.5),
             ),
           ),
           const SizedBox(width: 12),
@@ -263,8 +276,8 @@ class _BarisBiodata extends StatelessWidget {
               textAlign: TextAlign.right,
               style: const TextStyle(
                 color: WarnaJosBook.teks,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),

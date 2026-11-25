@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme.dart';
+import '../../shared/widgets/animasi_josbook.dart';
+import '../../shared/widgets/latar_halaman.dart';
 import '../../shared/widgets/navbar.dart';
 import '../../shared/widgets/state_views.dart';
 import '../unduh/unduh_service.dart';
@@ -70,48 +72,16 @@ class _NilaiScreenState extends State<NilaiScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: latarHalamanJosBook,
       bottomNavigationBar: const NavbarJosBook(aktif: TabNav.nilai),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              WarnaJosBook.navy,
-              Color(0xFF2F80ED),
-              Color(0xFFEAF2FF),
-              Colors.white,
-            ],
-            stops: [0, 0.22, 0.42, 0.58],
-          ),
-        ),
+      body: LatarGradasiJosBook(
         child: SafeArea(
           child: Column(
             children: [
-              SizedBox(
-                height: 72,
-                child: Row(
-                  children: [
-                    const SizedBox(width: 12),
-                    IconButton(
-                      tooltip: 'Kembali ke Home',
-                      onPressed: () => context.go('/home'),
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    ),
-                    const Expanded(
-                      child: Text(
-                        'Nilai',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 56),
-                  ],
-                ),
+              HeaderHalamanJosBook(
+                judul: 'Nilai',
+                tooltipKembali: 'Kembali ke Home',
+                onKembali: () => context.go('/home'),
               ),
               Expanded(
                 child: AnimatedBuilder(
@@ -196,21 +166,33 @@ class _PilihTahun extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 46,
+      height: 48,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: garisKartuJosBook),
+        boxShadow: [
+          BoxShadow(
+            color: WarnaJosBook.navy.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: nilai,
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded),
+          borderRadius: BorderRadius.circular(14),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: WarnaJosBook.navy,
+          ),
           style: const TextStyle(
             color: WarnaJosBook.teks,
             fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w700,
           ),
           items: [
             for (final tahun in daftar)
@@ -239,10 +221,10 @@ class _PilihSemester extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(3),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: const Color(0xFFE4EAF2),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
@@ -277,19 +259,29 @@ class _ItemSemester extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        height: 34,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        height: 36,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: aktif ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(9),
+          boxShadow: aktif
+              ? [
+                  BoxShadow(
+                    color: WarnaJosBook.navy.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: aktif ? WarnaJosBook.teks : const Color(0xFF718096),
-            fontSize: 14,
-            fontWeight: aktif ? FontWeight.w700 : FontWeight.w500,
+            color: aktif ? WarnaJosBook.navy : teksPudarJosBook,
+            fontSize: 13.5,
+            fontWeight: aktif ? FontWeight.w800 : FontWeight.w500,
           ),
         ),
       ),
@@ -345,39 +337,72 @@ class _KartuNilai extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mapel = data?.mapel ?? const <NilaiMapel>[];
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x22000000),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: mapel.isEmpty
-          ? const EmptyStateView(
-              message: 'Belum ada nilai untuk semester ini',
-              padding: EdgeInsets.symmetric(vertical: 28),
-              textStyle: TextStyle(color: Color(0xFF718096), fontSize: 14),
-            )
-          : Column(
-              children: [
-                for (final item in mapel)
-                  _BarisNilai(
-                    label: item.nama,
-                    nilai: _formatNilai(item.nilai),
-                  ),
-                _BarisNilai(
-                  label: 'Rata-rata',
-                  nilai: _formatNilai(data!.rataRata),
-                  garis: false,
-                ),
-              ],
+    return MasukBertahap(
+      tunda: Duration.zero,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: garisKartuJosBook),
+          boxShadow: [
+            BoxShadow(
+              color: WarnaJosBook.navy.withValues(alpha: 0.06),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
             ),
+          ],
+        ),
+        child: mapel.isEmpty
+            ? const EmptyStateView(
+                message: 'Belum ada nilai untuk semester ini',
+                padding: EdgeInsets.symmetric(vertical: 28),
+                textStyle: TextStyle(color: teksPudarJosBook, fontSize: 14),
+              )
+            : Column(
+                children: [
+                  for (int i = 0; i < mapel.length; i++)
+                    _BarisNilai(
+                      label: mapel[i].nama,
+                      nilai: _formatNilai(mapel[i].nilai),
+                      garis: i < mapel.length - 1,
+                    ),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: WarnaJosBook.biruMuda,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Rata-rata',
+                            style: TextStyle(
+                              color: WarnaJosBook.navy,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          _formatNilai(data!.rataRata),
+                          style: const TextStyle(
+                            color: WarnaJosBook.navy,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 
@@ -473,42 +498,44 @@ class _TombolUnduh extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: aktif ? const Color(0xFF12365F) : const Color(0xFF7F8B99),
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        onTap: aktif && !sedangUnduh ? onTap : null,
-        borderRadius: BorderRadius.circular(10),
-        child: SizedBox(
-          height: 56,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (sedangUnduh)
-                const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
+    return KartuTekan(
+      child: Material(
+        color: aktif ? WarnaJosBook.navy : const Color(0xFF7F8B99),
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          onTap: aktif && !sedangUnduh ? onTap : null,
+          borderRadius: BorderRadius.circular(14),
+          child: SizedBox(
+            height: 52,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (sedangUnduh)
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                else
+                  const Icon(
+                    Icons.download_rounded,
                     color: Colors.white,
+                    size: 19,
                   ),
-                )
-              else
-                const Icon(
-                  Icons.download_rounded,
-                  color: Colors.white,
-                  size: 18,
+                const SizedBox(width: 8),
+                const Text(
+                  'Unduh nilai semester ini',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              const SizedBox(width: 8),
-              const Text(
-                'Unduh nilai semester ini',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

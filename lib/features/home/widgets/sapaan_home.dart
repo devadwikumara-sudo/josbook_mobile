@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../../core/theme.dart';
 import '../home_data.dart';
 
 /// Foto + "Halo, {nama} 👋" + chip kelas dan NISN.
@@ -13,52 +14,111 @@ class SapaanHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        AvatarSiswa(nama: data.nama, foto: foto),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Halo, ${data.nama} 👋',
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Selamat datang di aplikasi buku induk sekolah',
-                style: TextStyle(color: Colors.white70, fontSize: 13),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.35),
+    const List<Shadow> bayanganTeks = [
+      Shadow(
+        color: Color(0x40062A6B),
+        blurRadius: 8,
+        offset: Offset(0, 2),
+      ),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.32),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          AvatarSiswa(nama: data.nama, foto: foto, ukuran: 84),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Halo, ${data.nama} 👋',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                    height: 1.2,
+                    shadows: bayanganTeks,
                   ),
                 ),
-                child: Text(
-                  'Kelas ${data.kelas} | NISN: ${data.nisn}',
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                const SizedBox(height: 4),
+                Text(
+                  'Selamat datang di buku induk sekolah',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.94),
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                    shadows: bayanganTeks,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    _PillInfo(
+                      ikon: Icons.class_rounded,
+                      teks: 'Kelas ${data.kelas}',
+                    ),
+                    _PillInfo(
+                      ikon: Icons.badge_outlined,
+                      teks: 'NISN ${data.nisn}',
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PillInfo extends StatelessWidget {
+  const _PillInfo({required this.ikon, required this.teks});
+
+  final IconData ikon;
+  final String teks;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: WarnaJosBook.navy.withValues(alpha: 0.22),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.38),
         ),
-      ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(ikon, size: 13, color: Colors.white),
+          const SizedBox(width: 5),
+          Text(
+            teks,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -91,14 +151,14 @@ class AvatarSiswa extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget inisial = Container(
-      color: const Color(0xFFEAF2FF),
+      color: WarnaJosBook.biruMuda,
       alignment: Alignment.center,
       child: Text(
         _inisial,
         style: TextStyle(
           fontSize: ukuran * 0.34,
           fontWeight: FontWeight.w800,
-          color: const Color(0xFF062A6B),
+          color: WarnaJosBook.navy,
         ),
       ),
     );
@@ -109,9 +169,20 @@ class AvatarSiswa extends StatelessWidget {
         width: ukuran,
         height: ukuran,
         padding: const EdgeInsets.all(3),
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
           shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.white, Color(0xFFA9CEFF)],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: WarnaJosBook.navy.withValues(alpha: 0.25),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: ClipOval(
           child: (foto == null)

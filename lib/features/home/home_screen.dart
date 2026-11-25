@@ -16,6 +16,7 @@ import '../notifikasi/notifikasi_model.dart';
 import '../notifikasi/notifikasi_provider.dart';
 import '../notifikasi/notifikasi_service.dart';
 import 'widgets/aktivitas_home.dart';
+import 'widgets/animasi_home.dart';
 import 'widgets/header_home.dart';
 import 'widgets/ringkasan_home.dart';
 import 'widgets/sapaan_home.dart';
@@ -123,44 +124,84 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: HomeWarna.latar,
       bottomNavigationBar: const NavbarJosBook(aktif: TabNav.home),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              WarnaJosBook.navy,
-              WarnaJosBook.biru,
-              HomeWarna.gradasiTerang,
-              Colors.white,
-            ],
-            stops: [0.0, 0.16, 0.32, 0.5],
+      body: Stack(
+        children: [
+          _latarHero(),
+          SafeArea(
+            bottom: false,
+            child: AnimatedBuilder(
+              animation: _notifikasiProvider,
+              builder: (context, _) => AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                child: _isi(),
+              ),
+            ),
           ),
-        ),
-        child: Stack(
-          children: [
-            SafeArea(
+          Positioned(
+            top: 0,
+            left: 16,
+            right: 16,
+            child: SafeArea(
               bottom: false,
-              child: AnimatedBuilder(
-                animation: _notifikasiProvider,
-                builder: (context, _) => _isi(),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: IgnorePointer(child: ToastLogin(tampil: _toastTampil)),
               ),
             ),
-            Positioned(
-              top: 0,
-              left: 16,
-              right: 16,
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: IgnorePointer(child: ToastLogin(tampil: _toastTampil)),
-                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _latarHero() {
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  WarnaJosBook.navy,
+                  WarnaJosBook.biru,
+                  HomeWarna.gradasiTerang,
+                  HomeWarna.latar,
+                ],
+                stops: [0.0, 0.25, 0.44, 0.62],
               ),
             ),
-          ],
-        ),
+          ),
+          Positioned(
+            top: -55,
+            right: -40,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.07),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 65,
+            left: -50,
+            child: Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.05),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -172,11 +213,13 @@ class _HomeScreenState extends State<HomeScreen> {
     if (data == null) {
       if (_memuat) {
         return const SingleChildScrollView(
+          key: ValueKey('skeleton'),
           padding: EdgeInsets.fromLTRB(20, 16, 20, 24),
           child: SkeletonHome(),
         );
       }
       return ErrorHome(
+        key: const ValueKey('error'),
         pesan: _pesanError ?? 'Terjadi kesalahan.',
         onUlang: _ulang,
       );
@@ -185,41 +228,59 @@ class _HomeScreenState extends State<HomeScreen> {
     final bool wajibGanti = context.watch<AuthProvider>().wajibGantiPassword;
 
     return RefreshIndicator(
+      key: const ValueKey('konten'),
+      color: WarnaJosBook.biru,
+      backgroundColor: Colors.white,
       onRefresh: _muat,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
         children: [
-          HeaderHome(
-            sekolah: data.sekolah,
-            jumlahBelumDibaca: _notifikasiProvider.jumlahBelumDibaca,
-            onNotifikasi: _bukaNotifikasi,
+          MasukBertahap(
+            tunda: Duration.zero,
+            child: HeaderHome(
+              sekolah: data.sekolah,
+              jumlahBelumDibaca: _notifikasiProvider.jumlahBelumDibaca,
+              onNotifikasi: _bukaNotifikasi,
+            ),
+          ),
+          const SizedBox(height: 22),
+          MasukBertahap(
+            tunda: const Duration(milliseconds: 70),
+            child: SapaanHome(data: data, foto: profil.foto),
           ),
           const SizedBox(height: 24),
-          SapaanHome(data: data, foto: profil.foto),
-          const SizedBox(height: 28),
           if (wajibGanti) ...[
-            _bannerGantiPassword(),
+            MasukBertahap(
+              tunda: const Duration(milliseconds: 110),
+              child: _bannerGantiPassword(),
+            ),
             const SizedBox(height: 16),
           ],
-          RingkasanHome(
-            data: data,
-            onSemester: () => context.go('/nilai'),
-            onBukuInduk: () => context.go('/biodata'),
-            onNilai: () => context.go('/nilai'),
-            onUnduh: () => context.go('/unduh'),
+          MasukBertahap(
+            tunda: const Duration(milliseconds: 140),
+            child: RingkasanHome(
+              data: data,
+              onSemester: () => context.go('/nilai'),
+              onBukuInduk: () => context.go('/biodata'),
+              onNilai: () => context.go('/nilai'),
+              onUnduh: () => context.go('/unduh'),
+            ),
           ),
           const SizedBox(height: 24),
-          AktivitasHome(
-            items: _notifikasiProvider.items
-                .take(3)
-                .map(_aktivitasDariNotifikasi)
-                .toList(growable: false),
-            onItem: _bukaNotifikasi,
-            onLihatSemua: _bukaNotifikasi,
-            memuat: _notifikasiProvider.memuat,
-            pesanError: _notifikasiProvider.error,
-            onUlang: () => unawaited(_notifikasiProvider.muat()),
+          MasukBertahap(
+            tunda: const Duration(milliseconds: 210),
+            child: AktivitasHome(
+              items: _notifikasiProvider.items
+                  .take(3)
+                  .map(_aktivitasDariNotifikasi)
+                  .toList(growable: false),
+              onItem: _bukaNotifikasi,
+              onLihatSemua: _bukaNotifikasi,
+              memuat: _notifikasiProvider.memuat,
+              pesanError: _notifikasiProvider.error,
+              onUlang: () => unawaited(_notifikasiProvider.muat()),
+            ),
           ),
         ],
       ),

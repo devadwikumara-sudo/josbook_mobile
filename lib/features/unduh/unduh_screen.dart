@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/api_client.dart';
 import '../../core/theme.dart';
+import '../../shared/widgets/animasi_josbook.dart';
+import '../../shared/widgets/latar_halaman.dart';
 import '../../shared/widgets/navbar.dart';
 import '../../shared/widgets/state_views.dart';
 import '../nilai/nilai_model.dart';
@@ -114,111 +116,176 @@ class _UnduhScreenState extends State<UnduhScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: latarHalamanJosBook,
       bottomNavigationBar: const NavbarJosBook(aktif: TabNav.unduh),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              WarnaJosBook.navy,
-              Color(0xFF2F80ED),
-              Color(0xFFEAF2FF),
-              Colors.white,
-            ],
-            stops: [0, 0.22, 0.42, 0.58],
-          ),
-        ),
+      body: LatarGradasiJosBook(
         child: SafeArea(
           child: Column(
             children: [
-              SizedBox(
-                height: 72,
-                child: Row(
-                  children: [
-                    const SizedBox(width: 12),
-                    IconButton(
-                      tooltip: 'Kembali ke Home',
-                      onPressed: () => context.go('/home'),
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    ),
-                    const Expanded(
-                      child: Text(
-                        'Unduh data',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 56),
-                  ],
-                ),
+              HeaderHalamanJosBook(
+                judul: 'Unduh data',
+                tooltipKembali: 'Kembali ke Home',
+                onKembali: () => context.go('/home'),
               ),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 64, 20, 24),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
                   children: [
-                    _pilihJenis(),
-                    if (_butuhPeriode) ...[
-                      const SizedBox(height: 10),
-                      if (_errorPeriode != null)
-                        _pesanErrorPeriode()
-                      else if (_periode.isEmpty && !_memuatPeriode)
-                        _pesanKosongPeriode()
-                      else ...[
-                        _pilihTahun(),
-                        const SizedBox(height: 10),
-                        _pilihSemester(),
-                      ],
-                    ],
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      height: 50,
-                      child: FilledButton.icon(
-                        onPressed:
-                            _sedangUnduh ||
-                                (_butuhPeriode &&
-                                    (_memuatPeriode ||
-                                        _errorPeriode != null ||
-                                        _periodeTerpilih == null))
-                            ? null
-                            : _unduh,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF12385F),
-                          disabledBackgroundColor: const Color(0xFF12385F),
-                          foregroundColor: Colors.white,
-                          disabledForegroundColor: Colors.white70,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(9),
-                          ),
+                    MasukBertahap(
+                      tunda: Duration.zero,
+                      child: Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(color: garisKartuJosBook),
+                          boxShadow: [
+                            BoxShadow(
+                              color: WarnaJosBook.navy.withValues(alpha: 0.06),
+                              blurRadius: 18,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
                         ),
-                        icon: _sedangUnduh
-                            ? const SizedBox(
-                                width: 17,
-                                height: 17,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 42,
+                                  height: 42,
+                                  decoration: BoxDecoration(
+                                    color: WarnaJosBook.biruMuda,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(
+                                    Icons.picture_as_pdf_rounded,
+                                    color: WarnaJosBook.navy,
+                                    size: 22,
+                                  ),
                                 ),
-                              )
-                            : const Icon(Icons.download_for_offline_outlined),
-                        label: Text(
-                          _sedangUnduh ? 'Menyiapkan PDF...' : 'Unduh PDF',
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                                const SizedBox(width: 12),
+                                const Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Ekspor Dokumen PDF',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w800,
+                                          color: WarnaJosBook.teks,
+                                        ),
+                                      ),
+                                      SizedBox(height: 2),
+                                      Text(
+                                        'Pilih jenis dokumen dan periode',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: teksPudarJosBook,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 18),
+                            _pilihJenis(),
+                            if (_butuhPeriode) ...[
+                              const SizedBox(height: 12),
+                              if (_errorPeriode != null)
+                                _pesanErrorPeriode()
+                              else if (_periode.isEmpty && !_memuatPeriode)
+                                _pesanKosongPeriode()
+                              else ...[
+                                _pilihTahun(),
+                                const SizedBox(height: 12),
+                                _pilihSemester(),
+                              ],
+                            ],
+                            const SizedBox(height: 18),
+                            KartuTekan(
+                              child: SizedBox(
+                                height: 50,
+                                child: FilledButton.icon(
+                                  onPressed:
+                                      _sedangUnduh ||
+                                          (_butuhPeriode &&
+                                              (_memuatPeriode ||
+                                                  _errorPeriode != null ||
+                                                  _periodeTerpilih == null))
+                                      ? null
+                                      : _unduh,
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: WarnaJosBook.navy,
+                                    disabledBackgroundColor: const Color(
+                                      0xFF9AA5B4,
+                                    ),
+                                    foregroundColor: Colors.white,
+                                    disabledForegroundColor: Colors.white70,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                  icon: _sedangUnduh
+                                      ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : const Icon(
+                                          Icons.download_for_offline_outlined,
+                                        ),
+                                  label: Text(
+                                    _sedangUnduh
+                                        ? 'Menyiapkan PDF...'
+                                        : 'Unduh PDF',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: latarHalamanJosBook,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: garisKartuJosBook),
+                              ),
+                              child: const Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.info_outline_rounded,
+                                    size: 16,
+                                    color: teksPudarJosBook,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Hanya tahun ajaran dan semester yang sudah dijalani '
+                                      'yang bisa dibuka. Data tidak dapat diubah dari app.',
+                                      style: TextStyle(
+                                        color: teksPudarJosBook,
+                                        fontSize: 12,
+                                        height: 1.35,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Hanya tahun ajaran dan semester yang sudah dijalani '
-                      'yang bisa dibuka. Data tidak dapat diubah dari app.',
-                      style: TextStyle(
-                        color: Color(0xFF758396),
-                        fontSize: 12,
-                        height: 1.35,
                       ),
                     ),
                   ],
@@ -233,11 +300,11 @@ class _UnduhScreenState extends State<UnduhScreen> {
 
   Widget _pilihJenis() {
     return Container(
-      height: 34,
-      padding: const EdgeInsets.all(3),
+      height: 42,
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFE2E8F0),
-        borderRadius: BorderRadius.circular(9),
+        color: const Color(0xFFE4EAF2),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
@@ -260,11 +327,12 @@ class _UnduhScreenState extends State<UnduhScreen> {
         .toSet()
         .toList(growable: false);
     return Container(
-      height: 42,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      height: 46,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(9),
+        color: latarHalamanJosBook,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: garisKartuJosBook),
       ),
       child: _memuatPeriode
           ? const Align(
@@ -306,11 +374,11 @@ class _UnduhScreenState extends State<UnduhScreen> {
         .where((item) => item.tahunAjaran == _periodeTerpilih?.tahunAjaran)
         .toList(growable: false);
     return Container(
-      height: 34,
-      padding: const EdgeInsets.all(3),
+      height: 42,
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFE2E8F0),
-        borderRadius: BorderRadius.circular(9),
+        color: const Color(0xFFE4EAF2),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
@@ -366,21 +434,34 @@ class _TombolPilihan extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: terpilih ? Colors.white : Colors.transparent,
-      borderRadius: BorderRadius.circular(7),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(7),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          color: terpilih ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(9),
+          boxShadow: terpilih
+              ? [
+                  BoxShadow(
+                    color: WarnaJosBook.navy.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
         child: Center(
           child: Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: terpilih ? WarnaJosBook.navy : const Color(0xFF667085),
-              fontSize: 12,
-              fontWeight: terpilih ? FontWeight.w600 : FontWeight.w500,
+              color: terpilih ? WarnaJosBook.navy : teksPudarJosBook,
+              fontSize: 12.5,
+              fontWeight: terpilih ? FontWeight.w700 : FontWeight.w500,
             ),
           ),
         ),

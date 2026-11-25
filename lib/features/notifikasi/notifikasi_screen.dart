@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme.dart';
+import '../../shared/widgets/animasi_josbook.dart';
+import '../../shared/widgets/latar_halaman.dart';
 import '../../shared/widgets/state_views.dart';
 import '../home/home_data.dart';
 import 'notifikasi_model.dart';
@@ -66,56 +68,20 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              WarnaJosBook.navy,
-              WarnaJosBook.biru,
-              Color(0xFFEAF2FF),
-              Colors.white,
-            ],
-            stops: [0, 0.18, 0.36, 0.54],
-          ),
-        ),
+      backgroundColor: latarHalamanJosBook,
+      body: LatarGradasiJosBook(
         child: SafeArea(
           child: Column(
             children: [
-              SizedBox(
-                height: 64,
-                child: Row(
-                  children: [
-                    const SizedBox(width: 8),
-                    IconButton(
-                      tooltip: 'Kembali',
-                      onPressed: () {
-                        if (context.canPop()) {
-                          context.pop();
-                        } else {
-                          context.go('/home');
-                        }
-                      },
-                      icon: const Icon(
-                        Icons.arrow_back_rounded,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const Expanded(
-                      child: Text(
-                        'Notifikasi',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 56),
-                  ],
-                ),
+              HeaderHalamanJosBook(
+                judul: 'Notifikasi',
+                onKembali: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/home');
+                  }
+                },
               ),
               Expanded(
                 child: AnimatedBuilder(
@@ -189,9 +155,12 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
         separatorBuilder: (_, _) => const SizedBox(height: 10),
         itemBuilder: (context, index) {
           final item = _provider.items[index];
-          return _KartuNotifikasi(
-            item: item,
-            onTap: () => unawaited(_tandaiBaca(item)),
+          return MasukBertahap(
+            tunda: Duration(milliseconds: (index * 45).clamp(0, 225)),
+            child: _KartuNotifikasi(
+              item: item,
+              onTap: () => unawaited(_tandaiBaca(item)),
+            ),
           );
         },
       ),
@@ -214,25 +183,26 @@ class _KartuNotifikasi extends StatelessWidget {
       _ => const Color(0xFF8264C8),
     };
 
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFDCE5F0)),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x12062A6B),
-                blurRadius: 8,
-                offset: Offset(0, 3),
-              ),
-            ],
-          ),
+    return KartuTekan(
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: garisKartuJosBook),
+              boxShadow: [
+                BoxShadow(
+                  color: WarnaJosBook.navy.withValues(alpha: 0.06),
+                  blurRadius: 16,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -294,6 +264,7 @@ class _KartuNotifikasi extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

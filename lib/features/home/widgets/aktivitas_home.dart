@@ -4,6 +4,7 @@ import '../../../core/theme.dart';
 import '../../../shared/widgets/state_views.dart';
 import '../home_data.dart';
 import '../home_warna.dart';
+import 'animasi_home.dart';
 
 /// Bagian "Aktivitas Terbaru" (maksimal 3 baris) + tautan "Lihat Semua".
 class AktivitasHome extends StatelessWidget {
@@ -26,17 +27,19 @@ class AktivitasHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<ItemAktivitas> tampil = items.take(3).toList(growable: false);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
           children: [
             Container(
-              width: 9,
-              height: 9,
-              decoration: const BoxDecoration(
+              width: 4,
+              height: 18,
+              decoration: BoxDecoration(
                 color: WarnaJosBook.biru,
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
             const SizedBox(width: 8),
@@ -47,32 +50,57 @@ class AktivitasHome extends StatelessWidget {
                   fontSize: 17,
                   fontWeight: FontWeight.w800,
                   color: WarnaJosBook.teks,
+                  letterSpacing: -0.2,
                 ),
               ),
             ),
-            TextButton(
-              onPressed: onLihatSemua,
-              child: const Text(
-                'Lihat Semua',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: WarnaJosBook.biru,
+            KartuTekan(
+              skalaTekan: 0.94,
+              child: TextButton(
+                onPressed: onLihatSemua,
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Lihat Semua',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: WarnaJosBook.biru,
+                      ),
+                    ),
+                    SizedBox(width: 2),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 12,
+                      color: WarnaJosBook.biru,
+                    ),
+                  ],
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 10),
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: HomeWarna.garisKartu),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.07),
-                blurRadius: 14,
-                offset: const Offset(0, 5),
+                color: WarnaJosBook.navy.withValues(alpha: 0.06),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -83,28 +111,33 @@ class AktivitasHome extends StatelessWidget {
                     child: SizedBox(
                       width: 22,
                       height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        color: WarnaJosBook.biru,
+                      ),
                     ),
                   ),
                 )
-              : pesanError != null && items.isEmpty
+              : pesanError != null && tampil.isEmpty
               ? ErrorStateView(
                   message: 'Aktivitas gagal dimuat.\n$pesanError',
                   onRetry: onUlang,
                   compact: true,
                   messageStyle: const TextStyle(color: HomeWarna.teksPudar),
                 )
-              : items.isEmpty
+              : tampil.isEmpty
               ? const EmptyStateView(
                   message: 'Belum ada aktivitas.',
                   textStyle: TextStyle(color: HomeWarna.teksPudar),
                 )
               : Column(
                   children: [
-                    for (final ItemAktivitas item in items.take(3))
+                    for (int i = 0; i < tampil.length; i++)
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: _Baris(item: item, onTap: onItem),
+                        padding: EdgeInsets.only(
+                          bottom: i == tampil.length - 1 ? 0 : 10,
+                        ),
+                        child: _Baris(item: tampil[i], onTap: onItem),
                       ),
                   ],
                 ),
@@ -123,63 +156,75 @@ class _Baris extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color warna = item.peringatan ? HomeWarna.oranye : HomeWarna.hijau;
+    final Color latar =
+        item.peringatan ? HomeWarna.oranyeMuda : HomeWarna.hijauMuda;
 
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
+    return KartuTekan(
+      child: Material(
+        color: HomeWarna.latar,
         borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: HomeWarna.garisKartu),
-          ),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: warna,
-                child: Icon(
-                  item.peringatan
-                      ? Icons.schedule_rounded
-                      : Icons.check_rounded,
-                  size: 18,
-                  color: Colors.white,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: HomeWarna.garisKartu),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: latar,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    item.peringatan
+                        ? Icons.schedule_rounded
+                        : Icons.check_rounded,
+                    size: 19,
+                    color: warna,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.judul,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        color: WarnaJosBook.navy,
-                      ),
-                    ),
-                    if (item.waktu.isNotEmpty)
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        item.waktu,
+                        item.judul,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 11,
-                          color: HomeWarna.teksPudar,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: WarnaJosBook.navy,
                         ),
                       ),
-                  ],
+                      if (item.waktu.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          item.waktu,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: HomeWarna.teksPudar,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
-              ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: HomeWarna.teksPudar,
-              ),
-            ],
+                const SizedBox(width: 6),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: HomeWarna.teksPudar,
+                ),
+              ],
+            ),
           ),
         ),
       ),

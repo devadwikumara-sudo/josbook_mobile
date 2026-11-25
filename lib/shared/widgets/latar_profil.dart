@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import '../../core/api_client.dart';
 import '../../features/profil/profil_provider.dart';
 import '../../../core/theme.dart';
+import 'animasi_josbook.dart';
+import 'latar_halaman.dart';
 
 /// Kerangka semua layar Profil: latar gradasi biru, judul + tombol kembali,
 /// avatar, nama, dan "Kelas | NISN" (sesuai desain Profil/Data Diri/Edit/Ganti Password).
@@ -34,86 +36,92 @@ class LatarProfil extends StatelessWidget {
     final profil = context.watch<ProfilProvider>();
 
     return Scaffold(
+      backgroundColor: latarHalamanJosBook,
       bottomNavigationBar: navbar,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              WarnaJosBook.navy,
-              Color(0xFF2F80ED),
-              Color(0xFFEAF2FF),
-              Colors.white,
-            ],
-            stops: [0, 0.22, 0.42, 0.58],
-          ),
-        ),
+      body: LatarGradasiJosBook(
+        stops: const [0.0, 0.24, 0.44, 0.62],
         child: SafeArea(
           child: Column(
             children: [
-              SizedBox(
-                height: 72,
-                child: Row(
-                  children: [
-                    const SizedBox(width: 12),
-                    IconButton(
-                      tooltip: 'Kembali',
-                      onPressed: () => context.go(kembaliKe),
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    ),
-                    Expanded(
-                      child: Text(
-                        judul,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 56),
-                  ],
-                ),
+              HeaderHalamanJosBook(
+                judul: judul,
+                onKembali: () => context.go(kembaliKe),
               ),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
                   children: [
                     if (denganHeaderPengguna) ...[
-                      const SizedBox(height: 12),
-                      Center(
-                        child: _Avatar(
-                          foto: profil.foto,
-                          sedangMengubahFoto: profil.sedangMengubahFoto,
-                          onTap: () => _pilihFoto(context),
+                      MasukBertahap(
+                        tunda: Duration.zero,
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 8),
+                            Center(
+                              child: _Avatar(
+                                foto: profil.foto,
+                                sedangMengubahFoto: profil.sedangMengubahFoto,
+                                onTap: () => _pilihFoto(context),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              profil.data?.nama ??
+                                  (profil.memuat ? 'Memuat…' : '-'),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.2,
+                                shadows: [
+                                  Shadow(
+                                    color: Color(0x40062A6B),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            if ((profil.data?.subJudul ?? '').isNotEmpty)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: WarnaJosBook.navy.withValues(
+                                    alpha: 0.24,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.32),
+                                  ),
+                                ),
+                                child: Text(
+                                  profil.data!.subJudul,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 14),
-                      Text(
-                        profil.data?.nama ?? (profil.memuat ? 'Memuat…' : '-'),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        profil.data?.subJudul ?? '',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 28),
                     ] else
                       const SizedBox(height: 8),
-                    ...isi,
+                    MasukBertahap(
+                      tunda: const Duration(milliseconds: 80),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: isi,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -244,11 +252,12 @@ class KartuProfil extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
+        border: Border.all(color: garisKartuJosBook),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x1F062A6B),
+            color: WarnaJosBook.navy.withValues(alpha: 0.06),
             blurRadius: 18,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -359,33 +368,36 @@ class TombolBiru extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 46,
-      child: FilledButton(
-        onPressed: memproses ? null : onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: warna,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+    return KartuTekan(
+      child: SizedBox(
+        width: double.infinity,
+        height: 48,
+        child: FilledButton(
+          onPressed: memproses ? null : onPressed,
+          style: FilledButton.styleFrom(
+            backgroundColor: warna,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
           ),
+          child: memproses
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : Text(
+                  teks,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13.5,
+                  ),
+                ),
         ),
-        child: memproses
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            : Text(
-                teks,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 13,
-                ),
-              ),
       ),
     );
   }

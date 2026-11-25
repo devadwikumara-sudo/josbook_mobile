@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme.dart';
+import '../../shared/widgets/animasi_josbook.dart';
+import '../../shared/widgets/latar_halaman.dart';
 import '../../shared/widgets/navbar.dart';
 import '../../shared/widgets/state_views.dart';
 import 'profil_provider.dart';
@@ -60,19 +62,22 @@ class _ProfilScreenState extends State<ProfilScreen> {
           rute: '/profil/bantuan',
         ),
         const SizedBox(height: 8),
-        SizedBox(
-          height: 46,
-          child: FilledButton(
-            onPressed: () => context.go('/logout-semua?dari=profil'),
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFE41E4D),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+        KartuTekan(
+          child: SizedBox(
+            height: 48,
+            child: FilledButton.icon(
+              onPressed: () => context.go('/logout-semua?dari=profil'),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFE41E4D),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
-            ),
-            child: const Text(
-              'Keluar Sesi',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+              icon: const Icon(Icons.logout_rounded, size: 18),
+              label: const Text(
+                'Keluar Sesi',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
+              ),
             ),
           ),
         ),
@@ -95,44 +100,65 @@ class _MenuProfil extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-      child: Material(
-        color: Colors.white,
-        elevation: 4,
-        shadowColor: const Color(0x33062A6B),
-        borderRadius: BorderRadius.circular(18),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(18),
-          onTap: () => context.go(rute),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: WarnaJosBook.biruMuda,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(ikon, size: 22, color: const Color(0xFF2F6FED)),
+      padding: const EdgeInsets.only(bottom: 14),
+      child: KartuTekan(
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: garisKartuJosBook),
+            boxShadow: [
+              BoxShadow(
+                color: WarnaJosBook.navy.withValues(alpha: 0.06),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(18),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(18),
+              onTap: () => context.go(rute),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 15,
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    judul,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: WarnaJosBook.teks,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: WarnaJosBook.biruMuda,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        ikon,
+                        size: 21,
+                        color: const Color(0xFF2F6FED),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        judul,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: WarnaJosBook.teks,
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: Color(0xFF8A94A6),
+                    ),
+                  ],
                 ),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: Color(0xFF8A94A6),
-                ),
-              ],
+              ),
             ),
           ),
         ),
