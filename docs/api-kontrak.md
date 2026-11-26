@@ -50,6 +50,8 @@ Setelah kata sandi diganti lewat tautan, semua perangkat dikeluarkan dan siswa l
 
 `GET /unduh/{jenis}` mengembalikan PDF: `bio`, `nilai`, `hadir`, `ekskul`, atau `all`. Jenis selain `bio` membutuhkan query `ta=<tahun_ajaran_id>&semester=Ganjil|Genap`.
 
+Isi PDF sama dengan cetak PDF di web (kertas F4): `bio` memuat Buku Induk (register A-I dengan pas foto); `nilai`, `hadir`, dan `ekskul` memuat laporan capaian pembelajaran (intrakurikuler, kokurikuler, ekstrakurikuler, ketidakhadiran) untuk satu periode; `all` memuat keduanya. Isinya dibatasi pada siswa yang login dan pada periode yang sudah terbuka (403 bila belum). Bagian "Kenaikan Kelas" hanya dicetak pada `all` setelah keputusannya tersimpan di server.
+
 ## Bentuk error
 
 Laravel mengembalikan pesan pada field `pesan` (dan `kode` bila tersedia); validasi mengembalikan HTTP 422 dengan `errors`. Klien mengubah timeout, kegagalan jaringan, validasi, dan error server menjadi pesan yang aman ditampilkan.
