@@ -6,12 +6,12 @@ import '../home_warna.dart';
 import 'animasi_home.dart';
 
 List<BoxShadow> _bayangan() => [
-      BoxShadow(
-        color: WarnaJosBook.navy.withValues(alpha: 0.06),
-        blurRadius: 18,
-        offset: const Offset(0, 6),
-      ),
-    ];
+  BoxShadow(
+    color: WarnaJosBook.navy.withValues(alpha: 0.06),
+    blurRadius: 18,
+    offset: const Offset(0, 6),
+  ),
+];
 
 /// Judul + chip semester, kartu ringkasan, dan tiga pintasan.
 class RingkasanHome extends StatelessWidget {
@@ -32,7 +32,26 @@ class RingkasanHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool aktif = data.status.toLowerCase() == 'aktif';
+    final String status = data.status.trim();
+    final String statusNormal = status.toLowerCase();
+    final bool lulus =
+        statusNormal == 'lulus' ||
+        statusNormal == 'alumni' ||
+        statusNormal == 'tamat' ||
+        statusNormal == 'graduated';
+    final bool aktif = statusNormal == 'aktif';
+    final bool mundur =
+        statusNormal == 'keluar' ||
+        statusNormal == 'dikeluarkan' ||
+        statusNormal == 'pindah';
+    final bool statusBaik = aktif || lulus;
+    final Color warnaStatus = lulus
+        ? const Color(0xFF0F766E)
+        : statusBaik
+        ? HomeWarna.hijau
+        : mundur
+        ? const Color(0xFFB45309)
+        : HomeWarna.teksPudar;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -86,7 +105,7 @@ class RingkasanHome extends StatelessWidget {
                         ),
                         const SizedBox(width: 5),
                         Text(
-                          'Semester ${data.semester}',
+                          lulus ? 'Status: Lulus' : 'Semester ${data.semester}',
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -134,9 +153,9 @@ class RingkasanHome extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  const Text(
-                    'Ringkasan semester ini',
-                    style: TextStyle(
+                  Text(
+                    lulus ? 'Ringkasan kelulusan' : 'Ringkasan semester ini',
+                    style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
                       color: WarnaJosBook.teks,
@@ -174,7 +193,9 @@ class RingkasanHome extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: aktif
+                            color: lulus
+                                ? const Color(0xFFDDEEEB)
+                                : aktif
                                 ? HomeWarna.hijauMuda
                                 : HomeWarna.chipAbu,
                             borderRadius: BorderRadius.circular(10),
@@ -186,20 +207,18 @@ class RingkasanHome extends StatelessWidget {
                                 width: 6,
                                 height: 6,
                                 decoration: BoxDecoration(
-                                  color: aktif
-                                      ? HomeWarna.hijau
-                                      : HomeWarna.teksPudar,
+                                  color: warnaStatus,
                                   shape: BoxShape.circle,
                                 ),
                               ),
                               const SizedBox(width: 5),
                               Text(
-                                data.status,
+                                lulus ? 'Lulus' : data.status,
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: aktif
-                                      ? HomeWarna.hijau
+                                  color: statusBaik
+                                      ? warnaStatus
                                       : HomeWarna.teksPudar,
                                 ),
                               ),

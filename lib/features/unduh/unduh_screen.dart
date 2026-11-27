@@ -272,8 +272,9 @@ class _UnduhScreenState extends State<UnduhScreen> {
                                   SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      'Hanya tahun ajaran dan semester yang sudah dijalani '
-                                      'yang bisa dibuka. Data tidak dapat diubah dari app.',
+                                      'Semua semester dapat dipilih. Semester yang '
+                                      'belum memiliki nilai akan tampil kosong dan '
+                                      'tetap dapat diunduh.',
                                       style: TextStyle(
                                         color: teksPudarJosBook,
                                         fontSize: 12,

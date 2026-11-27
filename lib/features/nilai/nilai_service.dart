@@ -56,8 +56,6 @@ class HttpNilaiService implements NilaiService {
             'Semester nilai dari server tidak valid.',
           );
         }
-        if (pilihan['terbuka'] != true) continue;
-
         hasil.add(
           NilaiPeriode(
             tahunAjaran: tahun,

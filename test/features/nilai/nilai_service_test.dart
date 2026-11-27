@@ -19,11 +19,20 @@ void main() {
     final service = HttpNilaiService(api: api);
 
     final periode = await service.ambilPeriode();
-    expect(periode, hasLength(3));
-    expect(periode.last.tahunAjaranId, 6);
-    expect(periode.last.terpilih, isTrue);
+    expect(periode, hasLength(4));
+    expect(
+      periode.where(
+        (item) => item.tahunAjaran == '2025/2026' && item.semester == 'Genap',
+      ),
+      isNotEmpty,
+    );
+    final terpilih = periode.singleWhere(
+      (item) => item.tahunAjaran == '2025/2026' && item.semester == 'Ganjil',
+    );
+    expect(terpilih.tahunAjaranId, 6);
+    expect(terpilih.terpilih, isTrue);
 
-    final nilai = await service.ambilNilai(periode.last);
+    final nilai = await service.ambilNilai(terpilih);
     expect(adapter.requests.last.path, '/nilai');
     expect(adapter.requests.last.queryParameters, {
       'ta': 6,

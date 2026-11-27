@@ -98,7 +98,20 @@ class NilaiProvider extends ChangeNotifier {
       data = hasil;
     } catch (error) {
       if (request != _requestNilai) return;
-      errorNilai = _pesanError(error);
+      // Semester yang belum memiliki nilai tetap dapat dipilih. Saat API
+      // mengembalikan 404 untuk semester kosong, tampilkan kartu kosong
+      // (bukan error) agar siswa tetap bisa melihat semua semester.
+      if (error is ApiException &&
+          (error.statusCode == 404 || error.statusCode == 204)) {
+        data = NilaiData(
+          tahunAjaran: pilihan.tahunAjaran,
+          semester: pilihan.semester,
+          mapel: const [],
+          rataRata: null,
+        );
+      } else {
+        errorNilai = _pesanError(error);
+      }
     } finally {
       if (request == _requestNilai) {
         memuatNilai = false;
