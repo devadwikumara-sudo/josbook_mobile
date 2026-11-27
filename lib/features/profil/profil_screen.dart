@@ -52,7 +52,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
           rute: '/profil/edit',
         ),
         const _MenuProfil(
-          ikon: Icons.person_outline_rounded,
+          ikon: Icons.lock_outline_rounded,
           judul: 'Ganti Password',
           rute: '/profil/ganti-password',
         ),
