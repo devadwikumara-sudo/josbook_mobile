@@ -115,8 +115,8 @@ class _LoginScreenState extends State<LoginScreen> {
             if (error != null)
               KotakErrorAuth(judul: 'Login gagal', pesan: error),
             FieldAuth(
-              label: 'Email / NISN / Username',
-              hint: 'Masukkan username',
+              label: 'NISN',
+              hint: 'Masukkan NISN',
               controller: _username,
               adaError: _usernameBermasalah,
               keyboardType: TextInputType.text,
